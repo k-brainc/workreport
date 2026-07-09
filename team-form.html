@@ -62,17 +62,24 @@
   .summary-chip .num{font-size:19px;font-weight:600;letter-spacing:-0.01em;}
   .summary-chip .lbl{font-size:11px;color:var(--sub);}
 
-  .row-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
-  .row-tab{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:980px;border:1px solid var(--line);background:var(--card);color:var(--sub);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .15s;}
-  .row-tab:hover{border-color:var(--blue);color:var(--blue);}
-  .row-tab.active{background:var(--blue);color:#fff;border-color:var(--blue);}
-  .row-tab .done-dot{width:7px;height:7px;border-radius:50%;background:var(--teal);flex-shrink:0;}
-  .row-tab.active .done-dot{background:#fff;}
+  .row-tabs{display:flex;align-items:center;gap:0;flex-wrap:nowrap;overflow-x:auto;margin-bottom:20px;padding:10px 4px;}
+  .row-step{display:flex;align-items:center;flex-shrink:0;cursor:pointer;}
+  .row-step-circle{width:34px;height:34px;border-radius:50%;background:var(--card);border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--sub);cursor:pointer;transition:all .2s cubic-bezier(.2,.8,.2,1);flex-shrink:0;position:relative;}
+  .row-step-circle svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2.4;}
+  .row-step-circle:hover{border-color:var(--blue);color:var(--blue);}
+  .row-step.active .row-step-circle{background:var(--blue);border-color:var(--blue);color:#fff;transform:scale(1.18);box-shadow:0 4px 14px rgba(113,50,245,0.35);}
+  .row-step.done .row-step-circle{background:var(--teal-tint);border-color:var(--teal);color:var(--teal);}
+  .row-step.done.active .row-step-circle{background:var(--teal);border-color:var(--teal);color:#fff;}
+  .row-step-line{width:26px;height:2px;background:var(--line);flex-shrink:0;transition:background .2s;}
+  .row-step-line.done{background:var(--teal);}
 
   .row-card{position:relative;background:var(--card);border:none;border-radius:22px;margin-bottom:18px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.04);display:none;}
   .row-card.active{display:block;}
   .field-lg-row{display:grid;grid-template-columns:1.5fr 1fr 0.9fr;gap:16px;}
   .readonly-field{background:#EEEBE4 !important;color:var(--sub) !important;cursor:default;}
+  .section-block{margin-bottom:4px;}
+  .section-title{font-size:11.5px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:14px;}
+  .section-divider{height:1px;background:#E2E2E0;margin:26px 0;}
 
   @media (max-width:680px){
     .field-lg-row, .grid2, .grid3col{grid-template-columns:1fr !important;}
@@ -128,10 +135,16 @@
   .lg-suggest-item:hover{background:var(--blue-tint);color:var(--blue-dark);}
   .lg-suggest-item .sub{font-size:11.5px;color:var(--muted);font-weight:400;}
   .owner-chips{display:flex;flex-direction:row;flex-wrap:wrap;gap:10px;margin-top:10px;align-items:flex-start;}
-  .owner-group{display:flex;flex-direction:column;gap:6px;min-width:150px;}
-  .owner-group-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:5px;font-size:12px;font-weight:700;padding:6px 8px;border-radius:980px;border:1px solid var(--blue-tint);background:var(--blue-tint);color:var(--blue-dark);cursor:pointer;transition:all .15s;white-space:nowrap;box-sizing:border-box;}
+  .owner-group{display:flex;flex-direction:column;gap:6px;min-width:140px;}
+  .owner-group-head{display:flex;align-items:stretch;gap:4px;}
+  .owner-group-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;font-size:12px;font-weight:700;padding:6px 8px;border-radius:980px;border:1px solid var(--blue-tint);background:var(--blue-tint);color:var(--blue-dark);cursor:pointer;transition:all .15s;white-space:nowrap;box-sizing:border-box;}
   .owner-group-btn .cnt{font-weight:400;color:var(--sub);}
+  .owner-expand-btn{width:28px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:50%;border:1px solid var(--blue-tint);background:#fff;color:var(--blue-dark);cursor:pointer;transition:all .15s;padding:0;}
+  .owner-expand-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.2;transition:transform .2s;}
+  .owner-expand-btn:hover{background:var(--blue-tint);}
+  .owner-expand-btn.expanded svg{transform:rotate(180deg);}
   .owner-chip-row{display:grid;grid-template-columns:repeat(2, 1fr);gap:5px 6px;align-items:start;}
+  .owner-chip-row.hidden{display:none;}
   .owner-chip{display:block;width:100%;box-sizing:border-box;text-align:center;font-size:12px;padding:5px 4px;border-radius:980px;border:1px solid var(--line);background:#fff;color:var(--sub);cursor:pointer;transition:all .15s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .owner-group-btn:hover{background:#E2D6FC;}
   .owner-chip:hover{border-color:var(--blue);}
@@ -237,82 +250,82 @@
       </button>
     </div>
     <div class="row-body">
-      <div class="field-lg-row">
-        <div class="field field-lg">
-          <label><svg class="icon" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h4l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2V6z"/></svg> 사업명</label>
-          <div class="lg-wrap">
-            <input type="text" class="field-lg-input" data-field="project" placeholder="사업명을 입력하면 사업 목록에서 찾아드려요" autocomplete="off">
-            <div class="lg-suggest hidden" data-el="projectSuggest"></div>
+
+      <div class="section-block">
+        <div class="section-title">사업 정보</div>
+        <div class="field-lg-row">
+          <div class="field field-lg">
+            <label><svg class="icon" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h4l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2V6z"/></svg> 사업명</label>
+            <div class="lg-wrap">
+              <input type="text" class="field-lg-input" data-field="project" placeholder="사업명을 입력하면 사업 목록에서 찾아드려요" autocomplete="off">
+              <div class="lg-suggest hidden" data-el="projectSuggest"></div>
+            </div>
+          </div>
+          <div class="field field-lg">
+            <label><svg class="icon" viewBox="0 0 24 24"><path d="M4 21V8a2 2 0 012-2h4V4a2 2 0 012-2h0a2 2 0 012 2v2h4a2 2 0 012 2v13"/><path d="M9 21v-4h6v4M4 21h16"/></svg> 고객사명</label>
+            <input type="text" class="field-lg-input readonly-field" data-field="client" placeholder="사업명 선택 시 자동 입력" readonly>
+          </div>
+          <div class="field field-lg">
+            <label><svg class="icon" viewBox="0 0 24 24"><path d="M9 3h6l1 3h3a1 1 0 011 1v3l-3 1v9a2 2 0 01-2 2H10a2 2 0 01-2-2v-9l-3-1V7a1 1 0 011-1h3l1-3z"/></svg> 사업코드</label>
+            <input type="text" class="field-lg-input readonly-field" data-field="projectCode" placeholder="사업명 선택 시 자동 입력" readonly>
           </div>
         </div>
-        <div class="field field-lg">
-          <label><svg class="icon" viewBox="0 0 24 24"><path d="M4 21V8a2 2 0 012-2h4V4a2 2 0 012-2h0a2 2 0 012 2v2h4a2 2 0 012 2v13"/><path d="M9 21v-4h6v4M4 21h16"/></svg> 고객사명</label>
-          <input type="text" class="field-lg-input readonly-field" data-field="client" placeholder="사업명 선택 시 자동 입력" readonly>
-        </div>
-        <div class="field field-lg">
-          <label><svg class="icon" viewBox="0 0 24 24"><path d="M9 3h6l1 3h3a1 1 0 011 1v3l-3 1v9a2 2 0 01-2 2H10a2 2 0 01-2-2v-9l-3-1V7a1 1 0 011-1h3l1-3z"/></svg> 사업코드</label>
-          <input type="text" class="field-lg-input readonly-field" data-field="projectCode" placeholder="사업명 선택 시 자동 입력" readonly>
-        </div>
-      </div>
 
-      <div class="field">
-        <label><svg class="icon" viewBox="0 0 24 24"><path d="M5 3v18M5 4h11l-2 4 2 4H5"/></svg> 단계</label>
-        <div class="stage-group" data-field="stageGroup">
-          <button type="button" class="stage-btn" data-stage="제안">제안</button>
-          <button type="button" class="stage-btn" data-stage="수행">수행</button>
-          <button type="button" class="stage-btn" data-stage="제안/수행">제안/수행</button>
-          <button type="button" class="stage-btn" data-stage="수행/정산">수행/정산</button>
-          <button type="button" class="stage-btn" data-stage="계약">계약</button>
-        </div>
-      </div>
-
-      <div class="field">
-        <label><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c1.5-4 4.5-6 7-6s5.5 2 7 6"/></svg> 담당</label>
-        <div class="owner-combobox" data-el="ownerCombobox">
-          <input type="text" class="owner-typeahead" placeholder="이름을 입력하면 명단에서 찾아드려요" autocomplete="off">
-          <input type="hidden" data-field="owner">
-          <button type="button" class="clear-owner-btn" data-action="clearOwner" aria-label="담당 전체 삭제">
-            <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
-          </button>
-          <div class="owner-suggest hidden" data-el="ownerSuggest"></div>
-        </div>
-        <div class="owner-warn-hint hidden" data-el="ownerWarnHint"></div>
-        <div class="owner-hint hidden" data-el="ownerHint">팀명을 클릭하면 그 팀 전체가, 이름을 클릭하면 그 사람만 추가돼요</div>
-        <div class="owner-chips" data-el="ownerChips"></div>
-      </div>
-
-      <div class="grid3col">
-        <div class="field"><label><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg> 전주내용</label><textarea data-field="lastWeek" placeholder="지난주 완료한 업무"></textarea></div>
-        <div class="field"><label><svg class="icon" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg> 금주내용</label><textarea data-field="thisWeek" placeholder="이번주 진행할 업무"></textarea></div>
-        <div class="field"><label><svg class="icon" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg> 차주내용</label><textarea data-field="nextWeek" placeholder="다음주 진행 예정 업무"></textarea></div>
-      </div>
-
-      <div class="grid2">
-        <div class="field">
-          <div class="field-head">
-            <label><svg class="icon" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg> 사업기간</label>
-            <div style="display:flex;align-items:center;gap:10px;">
-              <span class="period-toggle" data-action="togglePeriodMode">직접 입력으로 전환</span>
+        <div class="grid2">
+          <div class="field">
+            <div class="field-head">
+              <label><svg class="icon" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg> 사업기간</label>
               <label class="na-check"><input type="checkbox" data-field="periodNA"> 해당없음</label>
             </div>
+            <input type="text" class="readonly-field" data-field="period" placeholder="사업명 선택 시 자동 입력" readonly>
+            <div class="na-note hidden" data-el="periodNaNote">해당없음으로 표시됩니다</div>
           </div>
-          <div data-el="periodInputWrap">
-            <div class="period-range" data-el="periodCalendarWrap">
-              <input type="date" data-field="periodStart">
-              <span class="sep">~</span>
-              <input type="date" data-field="periodEnd">
+          <div class="field">
+            <div class="field-head">
+              <label><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 8h5a2 2 0 010 4H9m0 0h5m-5 0v4"/></svg> 매출(Vat별도)</label>
+              <label class="na-check"><input type="checkbox" data-field="revenueNA"> 해당없음</label>
             </div>
-            <input type="text" data-field="periodManual" placeholder="예: 2026.04~2026.12" class="hidden">
+            <input type="text" class="readonly-field" data-field="revenue" placeholder="사업명 선택 시 자동 입력" inputmode="numeric" readonly>
+            <div class="na-note hidden" data-el="revenueNaNote">해당없음으로 표시됩니다</div>
           </div>
-          <div class="na-note hidden" data-el="periodNaNote">해당없음으로 표시됩니다</div>
         </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <div class="section-block">
+        <div class="section-title">업무 내용</div>
+
         <div class="field">
-          <div class="field-head">
-            <label><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 8h5a2 2 0 010 4H9m0 0h5m-5 0v4"/></svg> 매출(Vat별도)</label>
-            <label class="na-check"><input type="checkbox" data-field="revenueNA"> 해당없음</label>
+          <label><svg class="icon" viewBox="0 0 24 24"><path d="M5 3v18M5 4h11l-2 4 2 4H5"/></svg> 단계</label>
+          <div class="stage-group" data-field="stageGroup">
+            <button type="button" class="stage-btn" data-stage="제안">제안</button>
+            <button type="button" class="stage-btn" data-stage="수행">수행</button>
+            <button type="button" class="stage-btn" data-stage="제안/수행">제안/수행</button>
+            <button type="button" class="stage-btn" data-stage="수행/정산">수행/정산</button>
+            <button type="button" class="stage-btn" data-stage="계약">계약</button>
           </div>
-          <input type="text" class="readonly-field" data-field="revenue" placeholder="사업명 선택 시 자동 입력" inputmode="numeric" readonly>
-          <div class="na-note hidden" data-el="revenueNaNote">해당없음으로 표시됩니다</div>
+        </div>
+
+        <div class="field">
+          <label><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c1.5-4 4.5-6 7-6s5.5 2 7 6"/></svg> 담당</label>
+          <div class="owner-combobox" data-el="ownerCombobox">
+            <input type="text" class="owner-typeahead" placeholder="이름을 입력하면 명단에서 찾아드려요" autocomplete="off">
+            <input type="hidden" data-field="owner">
+            <button type="button" class="clear-owner-btn" data-action="clearOwner" aria-label="담당 전체 삭제">
+              <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </button>
+            <div class="owner-suggest hidden" data-el="ownerSuggest"></div>
+          </div>
+          <div class="owner-warn-hint hidden" data-el="ownerWarnHint"></div>
+          <div class="owner-hint hidden" data-el="ownerHint">팀명을 클릭하면 그 팀 전체가 추가돼요. 화살표를 누르면 팀원 개개인을 고를 수 있어요</div>
+          <div class="owner-chips" data-el="ownerChips"></div>
+        </div>
+
+        <div class="grid3col">
+          <div class="field"><label><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg> 전주내용</label><textarea data-field="lastWeek" placeholder="지난주 완료한 업무"></textarea></div>
+          <div class="field"><label><svg class="icon" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg> 금주내용</label><textarea data-field="thisWeek" placeholder="이번주 진행할 업무"></textarea></div>
+          <div class="field"><label><svg class="icon" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg> 차주내용</label><textarea data-field="nextWeek" placeholder="다음주 진행 예정 업무"></textarea></div>
         </div>
       </div>
 
@@ -468,16 +481,26 @@ function showRow(index){
 function renderRowTabs(cards){
   cards = cards || [...rowsEl.querySelectorAll('.row-card')];
   const tabsEl = document.getElementById('rowTabs');
+  const checkIcon = '<svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>';
   tabsEl.innerHTML = cards.map((card, i) => {
     const done = card.classList.contains('is-completed');
-    return `<button type="button" class="row-tab ${i === activeRowIndex ? 'active' : ''}" data-row-index="${i}">${done ? '<span class="done-dot"></span>' : ''}항목 ${i+1}</button>`;
+    const active = i === activeRowIndex;
+    const line = i < cards.length - 1
+      ? `<div class="row-step-line ${done ? 'done' : ''}"></div>`
+      : '';
+    return `
+      <div class="row-step ${active ? 'active' : ''} ${done ? 'done' : ''}" data-row-index="${i}">
+        <div class="row-step-circle">${done ? checkIcon : (i + 1)}</div>
+      </div>
+      ${line}
+    `;
   }).join('');
 }
 
 document.getElementById('rowTabs').addEventListener('click', (e) => {
-  const tab = e.target.closest('.row-tab');
-  if (!tab) return;
-  showRow(Number(tab.dataset.rowIndex));
+  const step = e.target.closest('.row-step');
+  if (!step) return;
+  showRow(Number(step.dataset.rowIndex));
 });
 
 function updateSummary(){
@@ -506,14 +529,25 @@ function renderOwnerChips(card){
   const wrap = card.querySelector('[data-el="ownerChips"]');
   const hint = card.querySelector('[data-el="ownerHint"]');
   const groups = groupMembersForDisplay();
-  wrap.innerHTML = groups.map(g => `
+  const expanded = card._expandedOwnerGroups || (card._expandedOwnerGroups = new Set());
+  const hiddenInput = card.querySelector('[data-field="owner"]');
+  const currentNames = getOwnerNames(hiddenInput.value);
+  wrap.innerHTML = groups.map(g => {
+    const isOpen = expanded.has(g.label);
+    return `
     <div class="owner-group">
-      <button type="button" class="owner-group-btn" data-group-names="${escapeHtml(g.names.join(','))}">${escapeHtml(g.label)} <span class="cnt">${g.names.length}명</span></button>
-      <div class="owner-chip-row">
-        ${g.names.map(n => `<span class="owner-chip" data-name="${escapeHtml(n)}">${escapeHtml(n)}</span>`).join('')}
+      <div class="owner-group-head">
+        <button type="button" class="owner-group-btn" data-group-names="${escapeHtml(g.names.join(','))}">${escapeHtml(g.label)} <span class="cnt">${g.names.length}명</span></button>
+        <button type="button" class="owner-expand-btn ${isOpen ? 'expanded' : ''}" data-action="toggleOwnerGroup" data-group-label="${escapeHtml(g.label)}" aria-label="${escapeHtml(g.label)} 구성원 보기">
+          <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+      </div>
+      <div class="owner-chip-row ${isOpen ? '' : 'hidden'}">
+        ${g.names.map(n => `<span class="owner-chip ${currentNames.includes(n) ? 'selected' : ''}" data-name="${escapeHtml(n)}">${escapeHtml(n)}</span>`).join('')}
       </div>
     </div>
-  `).join('');
+  `;
+  }).join('');
   hint.classList.toggle('hidden', members.length === 0);
   validateOwnerField(card);
 }
@@ -636,6 +670,16 @@ function applyProjectMasterEntry(card, entry){
   card.querySelector('[data-field="client"]').value = entry.client || '';
   card.querySelector('[data-field="projectCode"]').value = entry.code || '';
 
+  const periodNA = card.querySelector('[data-field="periodNA"]');
+  if (entry.period === '' || entry.period == null) {
+    periodNA.checked = true;
+    togglePeriodNA(card, true);
+  } else {
+    periodNA.checked = false;
+    togglePeriodNA(card, false);
+    card.querySelector('[data-field="period"]').value = entry.period;
+  }
+
   const revenueNA = card.querySelector('[data-field="revenueNA"]');
   if (entry.revenue === '' || entry.revenue == null) {
     revenueNA.checked = true;
@@ -676,12 +720,8 @@ function addRow(prefill){
     if (prefill.period === '-' || prefill.period === '해당없음') {
       card.querySelector('[data-field="periodNA"]').checked = true;
       togglePeriodNA(card, true);
-    } else if (prefill.period) {
-      const manual = card.querySelector('[data-field="periodManual"]');
-      manual.value = prefill.period;
-      manual.classList.remove('hidden');
-      card.querySelector('[data-el="periodCalendarWrap"]').classList.add('hidden');
-      card.querySelector('[data-action="togglePeriodMode"]').textContent = '달력으로 전환';
+    } else {
+      card.querySelector('[data-field="period"]').value = prefill.period || '';
     }
     const group = card.querySelector('.stage-group');
     if (prefill.stage) {
@@ -702,7 +742,7 @@ document.getElementById('addRow').addEventListener('click', () => {
 });
 
 function togglePeriodNA(card, checked){
-  card.querySelector('[data-el="periodInputWrap"]').classList.toggle('hidden', checked);
+  card.querySelector('[data-field="period"]').classList.toggle('hidden', checked);
   card.querySelector('[data-el="periodNaNote"]').classList.toggle('hidden', !checked);
 }
 function toggleRevenueNA(card, checked){
@@ -761,6 +801,17 @@ rowsEl.addEventListener('click', (e) => {
     return;
   }
 
+  const expandBtn = e.target.closest('.owner-expand-btn');
+  if (expandBtn) {
+    const card = expandBtn.closest('.row-card');
+    const label = expandBtn.dataset.groupLabel;
+    const expanded = card._expandedOwnerGroups || (card._expandedOwnerGroups = new Set());
+    if (expanded.has(label)) expanded.delete(label); else expanded.add(label);
+    expandBtn.classList.toggle('expanded');
+    expandBtn.closest('.owner-group').querySelector('.owner-chip-row').classList.toggle('hidden');
+    return;
+  }
+
   const groupBtn = e.target.closest('.owner-group-btn');
   if (groupBtn) {
     const card = groupBtn.closest('.row-card');
@@ -796,21 +847,6 @@ rowsEl.addEventListener('click', (e) => {
     card.querySelector('[data-el="projectSuggest"]').classList.add('hidden');
     const entry = findProjectMasterEntry(projectItem.dataset.project);
     if (entry) applyProjectMasterEntry(card, entry);
-  }
-
-  const toggle = e.target.closest('[data-action="togglePeriodMode"]');
-  if (toggle) {
-    const card = toggle.closest('.row-card');
-    const cal = card.querySelector('[data-el="periodCalendarWrap"]');
-    const manual = card.querySelector('[data-field="periodManual"]');
-    const usingManual = !manual.classList.contains('hidden');
-    if (usingManual) {
-      manual.classList.add('hidden'); cal.classList.remove('hidden');
-      toggle.textContent = '직접 입력으로 전환';
-    } else {
-      cal.classList.add('hidden'); manual.classList.remove('hidden');
-      toggle.textContent = '달력으로 전환';
-    }
   }
 });
 
@@ -929,17 +965,7 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
     const get = (f) => card.querySelector('[data-field="'+f+'"]').value.trim();
     const stageGroup = card.querySelector('.stage-group');
 
-    let period;
-    if (card.querySelector('[data-field="periodNA"]').checked) {
-      period = '해당없음';
-    } else {
-      const manual = card.querySelector('[data-field="periodManual"]');
-      period = manual.value.trim();
-      if (!period) {
-        const s = get('periodStart'), en = get('periodEnd');
-        if (s && en) period = `${s.replace(/-/g,'.')}~${en.replace(/-/g,'.')}`;
-      }
-    }
+    const period = card.querySelector('[data-field="periodNA"]').checked ? '해당없음' : get('period');
     const revenue = card.querySelector('[data-field="revenueNA"]').checked ? '해당없음' : rawMoney(get('revenue'));
 
     return {
