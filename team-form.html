@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>팀별 주간 업무 현황 입력</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+<style>
+  :root{
+    --ink:#1C1C1E; --sub:#6C6C70; --muted:#98979C; --line:#D2D2D2; --bg:#DFDFDD; --card:#F6F6F5;
+    --blue:#7132F5; --blue-dark:#5824C4; --blue-tint:#EFE8FD;
+    --danger:#C6473C;
+    --amber:#8C5F13; --amber-tint:#F0E9DD;
+    --teal:#0D6653; --teal-tint:#DFECE8;
+    --purple:#7132F5; --purple-tint:#EFE8FD;
+    --navy:#1D5A9E; --navy-tint:#E1E9F2;
+    --green:#2C6E30; --green-tint:#E2ECE0;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1400px;margin:0 auto;padding:56px 24px 120px;}
+  .icon{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;vertical-align:-3px;}
+  .hidden{display:none !important;}
+
+  header{text-align:center;margin-bottom:48px;}
+  .brand-logo{display:flex;align-items:center;justify-content:center;margin-bottom:20px;}
+  .brand-logo a{display:inline-flex;}
+  .brand-logo img{height:28px;width:auto;}
+  header h1{font-size:32px;font-weight:800;margin:0 0 8px;letter-spacing:-0.015em;}
+  header p{font-size:16px;color:var(--sub);margin:0;font-weight:400;}
+
+  .team-pick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  .team-pick-card{background:var(--card);border:none;border-radius:20px;padding:32px 16px;text-align:center;cursor:pointer;transition:transform .2s cubic-bezier(.2,.8,.2,1), box-shadow .2s;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
+  .team-pick-card:hover{transform:translateY(-4px);box-shadow:0 12px 28px rgba(0,0,0,0.08);}
+  .team-pick-card .icon-wrap{width:52px;height:52px;border-radius:50%;background:var(--blue-tint);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;}
+  .team-pick-card .icon-wrap svg{width:24px;height:24px;stroke:var(--blue);fill:none;stroke-width:1.6;}
+  .team-pick-card .t-name{font-weight:800;font-size:15px;letter-spacing:-0.01em;}
+
+  .team-banner{display:flex;align-items:center;justify-content:space-between;padding:0 2px;margin-bottom:28px;}
+  .team-banner .t-name{font-weight:800;font-size:22px;letter-spacing:-0.015em;}
+  .change-team-btn{background:none;border:none;color:var(--blue);font-size:14px;font-weight:400;cursor:pointer;padding:0;}
+  .change-team-btn:hover{text-decoration:underline;}
+
+  .step2-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:100px 20px;}
+  .spinner{width:36px;height:36px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--blue);animation:spin .8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .loading-text{font-size:14px;color:var(--sub);font-weight:500;}
+
+  .week-nav{display:flex;align-items:center;justify-content:center;gap:22px;margin-bottom:24px;}
+  .week-nav button{background:var(--card);border:none;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink);flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,0.06);transition:box-shadow .15s;}
+  .week-nav button:hover{box-shadow:0 4px 10px rgba(0,0,0,0.1);}
+  .week-nav .label{text-align:center;min-width:190px;}
+  .week-nav .label .main{font-weight:800;font-size:19px;letter-spacing:-0.01em;}
+  .week-nav .label .sub{font-size:13px;color:var(--sub);margin-top:2px;}
+
+  .action-bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:20px;}
+  .ghost-btn{display:flex;align-items:center;gap:6px;padding:10px 18px;border-radius:980px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:13.5px;font-weight:500;cursor:pointer;transition:border-color .15s;}
+  .ghost-btn:hover{border-color:var(--blue);color:var(--blue);}
+  .ghost-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;}
+  .summary-chip{margin-left:auto;display:flex;gap:24px;}
+  .summary-chip .item{text-align:right;}
+  .summary-chip .num{font-size:19px;font-weight:600;letter-spacing:-0.01em;}
+  .summary-chip .lbl{font-size:11px;color:var(--sub);}
+
+  .row-card{position:relative;background:var(--card);border:none;border-radius:22px;margin-bottom:18px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
+  .completed-stamp{display:none;position:absolute;top:50%;left:50%;font-size:56px;font-weight:800;letter-spacing:0.15em;color:rgba(199,71,58,0.55);border:6px solid rgba(199,71,58,0.55);border-radius:16px;padding:8px 32px;transform:translate(-50%,-50%) rotate(-14deg);pointer-events:none;z-index:5;white-space:nowrap;}
+  .row-card.is-completed .completed-stamp{display:block;}
+  .row-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid #E2E2E0;}
+  .row-index{font-size:11.5px;font-weight:600;color:var(--muted);letter-spacing:0.04em;text-transform:uppercase;}
+  .continued-tag{font-size:10.5px;font-weight:600;color:var(--teal);background:var(--teal-tint);padding:3px 10px;border-radius:980px;margin-left:8px;}
+  .remove-btn{background:none;border:none;color:var(--muted);cursor:pointer;display:flex;align-items:center;padding:4px;border-radius:50%;}
+  .remove-btn:hover{color:var(--danger);background:#FBEAE8;}
+
+  .row-body{padding:22px 22px 24px;}
+  .field{display:flex;flex-direction:column;gap:7px;margin-bottom:20px;}
+  .field:last-child{margin-bottom:0;}
+  .field label{font-size:12.5px;color:var(--sub);font-weight:700;display:flex;align-items:center;gap:5px;}
+  .field-lg label{font-size:13px;color:var(--ink);font-weight:700;}
+  select,input[type=text],input[type=date],textarea{
+    font-family:inherit;font-size:15px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);width:100%;
+  }
+  select:focus,input:focus,textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 4px var(--blue-tint);}
+  input.field-lg-input{font-size:17px;font-weight:500;padding:13px 15px;}
+  textarea{min-height:130px;resize:vertical;line-height:1.6;}
+
+  .stage-group{display:flex;gap:8px;flex-wrap:wrap;}
+  .stage-btn{display:flex;align-items:center;gap:5px;font-size:13px;font-weight:500;padding:9px 16px;border-radius:980px;border:1px solid var(--line);background:#fff;color:var(--sub);cursor:pointer;transition:all .15s;}
+  .stage-btn:hover{border-color:var(--blue);color:var(--blue);}
+  .stage-btn.active[data-stage="제안"]{background:var(--amber-tint);color:var(--amber);border-color:var(--amber-tint);}
+  .stage-btn.active[data-stage="수행"]{background:var(--teal-tint);color:var(--teal);border-color:var(--teal-tint);}
+  .stage-btn.active[data-stage="제안/수행"]{background:var(--purple-tint);color:var(--purple);border-color:var(--purple-tint);}
+  .stage-btn.active[data-stage="수행/정산"]{background:var(--navy-tint);color:var(--navy);border-color:var(--navy-tint);}
+  .stage-btn.active[data-stage="계약"]{background:var(--green-tint);color:var(--green);border-color:var(--green-tint);}
+
+  .owner-hint{font-size:12px;color:var(--muted);font-weight:400;}
+  .owner-combobox{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:6px;min-height:44px;padding:6px 38px 6px 10px;border:1px solid var(--line);border-radius:12px;background:#fff;}
+  .owner-combobox:focus-within{border-color:var(--blue);box-shadow:0 0 0 4px var(--blue-tint);}
+  .owner-combobox.owner-warn{border-color:#C6473C;background:#FBEAE8;}
+  .owner-typeahead{flex:1 1 100px;min-width:100px;border:none;outline:none;padding:6px 2px;font-size:15px;font-family:inherit;background:transparent;}
+  .owner-tag{display:flex;align-items:center;gap:5px;font-size:12.5px;font-weight:600;padding:5px 6px 5px 12px;border-radius:980px;background:var(--blue-tint);color:var(--blue-dark);flex-shrink:0;}
+  .owner-tag-remove{width:16px;height:16px;border-radius:50%;border:none;background:rgba(0,0,0,0.08);color:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .owner-tag-remove svg{width:9px;height:9px;stroke:currentColor;fill:none;stroke-width:2.4;}
+  .owner-tag-remove:hover{background:var(--danger);color:#fff;}
+  .clear-owner-btn{position:absolute;right:6px;top:6px;bottom:6px;width:26px;background:none;border:none;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:8px;}
+  .clear-owner-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;}
+  .clear-owner-btn:hover{color:var(--danger);background:#FBEAE8;}
+  .owner-suggest{position:absolute;top:100%;left:0;right:0;background:var(--card);border:1px solid var(--line);border-radius:12px;margin-top:6px;box-shadow:0 6px 18px rgba(0,0,0,0.1);z-index:30;max-height:190px;overflow-y:auto;}
+  .owner-suggest-item{padding:10px 14px;font-size:13.5px;cursor:pointer;}
+  .owner-suggest-item:hover{background:var(--blue-tint);color:var(--blue);}
+  .owner-warn-hint{font-size:11.5px;color:#C6473C;font-weight:500;margin-top:6px;}
+  .lg-wrap{position:relative;}
+  .lg-suggest{position:absolute;top:100%;left:0;right:0;background:var(--card);border:1px solid var(--line);border-radius:12px;margin-top:6px;box-shadow:0 6px 18px rgba(0,0,0,0.1);z-index:30;max-height:220px;overflow-y:auto;}
+  .lg-suggest-item{padding:11px 15px;font-size:14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px;}
+  .lg-suggest-item:hover{background:var(--blue-tint);color:var(--blue-dark);}
+  .lg-suggest-item .sub{font-size:11.5px;color:var(--muted);font-weight:400;}
+  .owner-chips{display:flex;flex-direction:row;flex-wrap:wrap;gap:10px;margin-top:10px;align-items:flex-start;}
+  .owner-group{display:flex;flex-direction:column;gap:6px;min-width:150px;}
+  .owner-group-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:5px;font-size:12px;font-weight:700;padding:6px 8px;border-radius:980px;border:1px solid var(--blue-tint);background:var(--blue-tint);color:var(--blue-dark);cursor:pointer;transition:all .15s;white-space:nowrap;box-sizing:border-box;}
+  .owner-group-btn .cnt{font-weight:400;color:var(--sub);}
+  .owner-chip-row{display:grid;grid-template-columns:repeat(2, 1fr);gap:5px 6px;align-items:start;}
+  .owner-chip{display:block;width:100%;box-sizing:border-box;text-align:center;font-size:12px;padding:5px 4px;border-radius:980px;border:1px solid var(--line);background:#fff;color:var(--sub);cursor:pointer;transition:all .15s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .owner-group-btn:hover{background:#E2D6FC;}
+  .owner-chip:hover{border-color:var(--blue);}
+  .owner-chip.selected{border-color:var(--blue);color:var(--blue);background:var(--blue-tint);font-weight:600;}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .grid3col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+  .grid3col textarea{min-height:110px;}
+
+  .field-head{display:flex;align-items:center;justify-content:space-between;}
+  .na-check{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--sub);font-weight:500;cursor:pointer;user-select:none;}
+  .na-check input{width:15px;height:15px;margin:0;accent-color:var(--blue);cursor:pointer;}
+  .period-toggle{font-size:12px;color:var(--blue);cursor:pointer;font-weight:500;}
+  .period-toggle:hover{text-decoration:underline;}
+  .period-range{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;}
+  .period-range .sep{font-size:12px;color:var(--sub);text-align:center;}
+  .na-note{font-size:13px;color:var(--muted);padding:11px 14px;border:1px dashed var(--line);border-radius:12px;background:#EDEDEB;min-height:47px;display:flex;align-items:center;box-sizing:border-box;}
+  .completed-check{display:flex;align-items:center;gap:8px;margin-top:22px;padding-top:18px;border-top:1px solid #E2E2E0;font-size:13px;color:var(--sub);font-weight:600;cursor:pointer;user-select:none;}
+  .completed-check input{width:16px;height:16px;margin:0;accent-color:var(--teal);cursor:pointer;}
+
+  .add-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:7px;padding:15px;border:none;border-radius:980px;background:var(--card);color:var(--blue);font-weight:600;font-size:14.5px;cursor:pointer;margin-bottom:30px;box-shadow:0 1px 3px rgba(0,0,0,0.05);transition:box-shadow .15s;}
+  .add-btn:hover{box-shadow:0 4px 12px rgba(0,0,0,0.08);}
+  .add-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;}
+
+  .submit-bar{position:sticky;bottom:0;background:linear-gradient(180deg,rgba(251,251,253,0),var(--bg) 40%);padding:20px 0 0;}
+  .submit-btn{width:100%;padding:16px;border:none;border-radius:980px;background:var(--blue);color:#fff;font-weight:600;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s;}
+  .submit-btn svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2;}
+  .submit-btn:hover{background:var(--blue-dark);}
+  .submit-btn:disabled{background:#D2D2D7;color:#fff;cursor:default;}
+  .status{font-size:13.5px;text-align:center;margin-top:12px;color:var(--sub);}
+  .status.ok{color:#1D8A4A;}
+  .status.err{color:var(--danger);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand-logo">
+      <a href="index.html"><img src="data:image/png;base64,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" alt="K-BRAIN"></a>
+    </div>
+    <h1>팀별 주간 업무 현황</h1>
+    <p>고객사별로 전주 실적과 금주 계획을 입력해 주세요.</p>
+  </header>
+
+  <div id="step1">
+    <div class="team-pick-grid" id="teamGrid"></div>
+  </div>
+
+  <div id="step2" class="hidden">
+    <div class="team-banner">
+      <span class="t-name" id="bannerTeam"></span>
+      <button class="change-team-btn" id="changeTeamBtn" type="button">팀 다시 선택</button>
+    </div>
+
+    <div id="step2Loading" class="step2-loading hidden">
+      <div class="spinner"></div>
+      <div class="loading-text">데이터 로딩중...</div>
+    </div>
+
+    <div id="step2Content">
+      <div class="week-nav">
+        <button type="button" id="prevWeek"><svg class="icon" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
+        <div class="label"><div class="main" id="weekMain"></div><div class="sub" id="weekSub"></div></div>
+        <button type="button" id="nextWeek"><svg class="icon" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+      </div>
+
+      <div class="action-bar">
+        <button class="ghost-btn" id="loadPrevBtn" type="button">
+          <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 109-9M3 12l4-4M3 12l4 4"/></svg>
+          지난주 내용 다시 불러오기
+        </button>
+        <div class="summary-chip">
+          <div class="item"><div class="num" id="sumCount">0</div><div class="lbl">항목</div></div>
+          <div class="item"><div class="num" id="sumRevenue">0</div><div class="lbl">합계 매출(만원)</div></div>
+        </div>
+      </div>
+
+      <div id="rows"></div>
+      <button class="add-btn" id="addRow" type="button">
+        <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        고객사 항목 추가
+      </button>
+
+      <div class="submit-bar">
+        <button class="submit-btn" id="submitBtn" type="button">
+          <svg viewBox="0 0 24 24"><path d="M4 12l6 6L20 6"/></svg>
+          제출하기
+        </button>
+        <div class="status" id="status"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<template id="rowTemplate">
+  <div class="row-card">
+    <div class="completed-stamp" data-el="completedStamp">완료</div>
+    <div class="row-head">
+      <span class="row-index">항목 <span data-el="rowNum"></span><span class="continued-tag hidden" data-el="continuedTag">이어쓰기</span></span>
+      <button class="remove-btn" type="button" data-action="remove">
+        <svg class="icon" style="width:18px;height:18px" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="row-body">
+      <div class="field field-lg">
+        <label>고객사명</label>
+        <div class="lg-wrap">
+          <input type="text" class="field-lg-input" data-field="client" placeholder="예: NIA (이전에 입력한 고객사가 뜹니다)" autocomplete="off">
+          <div class="lg-suggest hidden" data-el="clientSuggest"></div>
+        </div>
+      </div>
+      <div class="field field-lg">
+        <label>사업명</label>
+        <div class="lg-wrap">
+          <input type="text" class="field-lg-input" data-field="project" placeholder="예: 2026년 AI챔피언 교육" autocomplete="off">
+          <div class="lg-suggest hidden" data-el="projectSuggest"></div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>단계</label>
+        <div class="stage-group" data-field="stageGroup">
+          <button type="button" class="stage-btn" data-stage="제안">제안</button>
+          <button type="button" class="stage-btn" data-stage="수행">수행</button>
+          <button type="button" class="stage-btn" data-stage="제안/수행">제안/수행</button>
+          <button type="button" class="stage-btn" data-stage="수행/정산">수행/정산</button>
+          <button type="button" class="stage-btn" data-stage="계약">계약</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>담당</label>
+        <div class="owner-combobox" data-el="ownerCombobox">
+          <input type="text" class="owner-typeahead" placeholder="이름을 입력하면 명단에서 찾아드려요" autocomplete="off">
+          <input type="hidden" data-field="owner">
+          <button type="button" class="clear-owner-btn" data-action="clearOwner" aria-label="담당 전체 삭제">
+            <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </button>
+          <div class="owner-suggest hidden" data-el="ownerSuggest"></div>
+        </div>
+        <div class="owner-warn-hint hidden" data-el="ownerWarnHint"></div>
+        <div class="owner-hint hidden" data-el="ownerHint">팀명을 클릭하면 그 팀 전체가, 이름을 클릭하면 그 사람만 추가돼요</div>
+        <div class="owner-chips" data-el="ownerChips"></div>
+      </div>
+
+      <div class="grid3col">
+        <div class="field"><label>전주내용</label><textarea data-field="lastWeek" placeholder="지난주 완료한 업무"></textarea></div>
+        <div class="field"><label>금주내용</label><textarea data-field="thisWeek" placeholder="이번주 진행할 업무"></textarea></div>
+        <div class="field"><label>차주내용</label><textarea data-field="nextWeek" placeholder="다음주 진행 예정 업무"></textarea></div>
+      </div>
+
+      <div class="grid2">
+        <div class="field">
+          <div class="field-head">
+            <label>사업기간</label>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span class="period-toggle" data-action="togglePeriodMode">직접 입력으로 전환</span>
+              <label class="na-check"><input type="checkbox" data-field="periodNA"> 해당없음</label>
+            </div>
+          </div>
+          <div data-el="periodInputWrap">
+            <div class="period-range" data-el="periodCalendarWrap">
+              <input type="date" data-field="periodStart">
+              <span class="sep">~</span>
+              <input type="date" data-field="periodEnd">
+            </div>
+            <input type="text" data-field="periodManual" placeholder="예: 2026.04~2026.12" class="hidden">
+          </div>
+          <div class="na-note hidden" data-el="periodNaNote">해당없음으로 표시됩니다</div>
+        </div>
+        <div class="field">
+          <div class="field-head">
+            <label>매출(Vat별도)</label>
+            <label class="na-check"><input type="checkbox" data-field="revenueNA"> 해당없음</label>
+          </div>
+          <input type="text" data-field="revenue" placeholder="예: 50,000,000" inputmode="numeric">
+          <div class="na-note hidden" data-el="revenueNaNote">해당없음으로 표시됩니다</div>
+        </div>
+      </div>
+
+      <label class="completed-check">
+        <input type="checkbox" data-field="completed">
+        이 항목 완료 (다음 주 목록에서 제외)
+      </label>
+    </div>
+  </div>
+</template>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbzV2aacbgOpzp4uHYwR4WojeNfHW3NfvYJK4-XjXkWtGsIdgjU_e5MUMMLnfD-eWh6N8Q/exec';
+
+const TEAMS = [
+  { name: '컨설팅팀', icon: '<circle cx="12" cy="8" r="3.2"/><path d="M5 20c1.5-4 4.5-6 7-6s5.5 2 7 6"/>' },
+  { name: '사업 1팀', icon: '<rect x="4" y="7" width="16" height="12" rx="2"/><path d="M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2"/>' },
+  { name: '사업 2팀', icon: '<rect x="4" y="7" width="16" height="12" rx="2"/><path d="M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2"/>' },
+  { name: '사업 3팀', icon: '<rect x="4" y="7" width="16" height="12" rx="2"/><path d="M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2"/>' },
+  { name: '사업 4팀', icon: '<rect x="4" y="7" width="16" height="12" rx="2"/><path d="M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2"/>' },
+  { name: '공공AI센터', icon: '<path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/>' }
+];
+
+let currentTeam = null;
+let formDirty = false;
+let currentMonday = mondayOf(new Date());
+let members = [];
+let teamHistory = [];
+
+function escapeHtml(str){
+  return String(str == null ? '' : str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function mondayOf(d){
+  const date = new Date(d);
+  const day = date.getDay();
+  const diff = (day === 0 ? -6 : 1) - day;
+  date.setDate(date.getDate() + diff);
+  date.setHours(0,0,0,0);
+  return date;
+}
+function toISO(d){
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+function weekOfMonthLabel(monday){
+  const month = monday.getMonth()+1;
+  const weekNum = Math.floor((monday.getDate()-1)/7)+1;
+  const friday = new Date(monday); friday.setDate(monday.getDate()+4);
+  const range = `${monday.getMonth()+1}/${monday.getDate()}~${friday.getMonth()+1}/${friday.getDate()}`;
+  return { main: `${month}월 ${weekNum}주차`, sub: range };
+}
+function renderWeekLabel(){
+  const { main, sub } = weekOfMonthLabel(currentMonday);
+  document.getElementById('weekMain').textContent = main;
+  document.getElementById('weekSub').textContent = sub;
+}
+
+const teamGrid = document.getElementById('teamGrid');
+teamGrid.innerHTML = TEAMS.map(t => `
+  <div class="team-pick-card" data-team="${t.name}">
+    <div class="icon-wrap"><svg viewBox="0 0 24 24" style="stroke-width:1.6;fill:none;stroke:inherit">${t.icon}</svg></div>
+    <div class="t-name">${t.name}</div>
+  </div>
+`).join('');
+teamGrid.addEventListener('click', (e) => {
+  const card = e.target.closest('.team-pick-card');
+  if (!card) return;
+  selectTeam(card.dataset.team);
+});
+
+async function selectTeam(team){
+  currentTeam = team;
+  document.getElementById('bannerTeam').textContent = team;
+  document.getElementById('step1').classList.add('hidden');
+  document.getElementById('step2').classList.remove('hidden');
+  document.getElementById('step2Content').classList.add('hidden');
+  document.getElementById('step2Loading').classList.remove('hidden');
+  renderWeekLabel();
+  if (!members.length) {
+    try {
+      const cfg = await fetch(`${API_URL}?action=config`).then(r => r.json());
+      members = cfg.members || [];
+    } catch (e) { members = []; }
+  }
+  try {
+    const hist = await fetch(`${API_URL}?action=teamData`).then(r => r.json());
+    teamHistory = hist; // 고객사명/사업명 자동완성은 팀 구분 없이 DB 전체 이력을 사용
+  } catch (e) { teamHistory = []; }
+  if (!rowsEl.children.length) {
+    const loaded = await loadPreviousWeekRows({ silent: true });
+    if (!loaded) addRow();
+  }
+  document.getElementById('step2Loading').classList.add('hidden');
+  document.getElementById('step2Content').classList.remove('hidden');
+}
+document.getElementById('changeTeamBtn').addEventListener('click', () => {
+  if (formDirty && !confirm('제출하지 않고 나가면 작성하던 데이터는 사라집니다. 계속하시겠어요?')) return;
+  formDirty = false;
+  document.getElementById('step2').classList.add('hidden');
+  document.getElementById('step1').classList.remove('hidden');
+  rowsEl.innerHTML = '';
+  currentMonday = mondayOf(new Date());
+  document.getElementById('status').textContent = '';
+  document.getElementById('status').className = 'status';
+});
+
+document.getElementById('prevWeek').addEventListener('click', () => {
+  currentMonday.setDate(currentMonday.getDate()-7); renderWeekLabel();
+});
+document.getElementById('nextWeek').addEventListener('click', () => {
+  currentMonday.setDate(currentMonday.getDate()+7); renderWeekLabel();
+});
+
+const rowsEl = document.getElementById('rows');
+const tpl = document.getElementById('rowTemplate');
+
+function formatMoney(v){
+  const digits = String(v).replace(/[^0-9]/g,'');
+  if (!digits) return '';
+  return Number(digits).toLocaleString('ko-KR');
+}
+function rawMoney(v){ return String(v).replace(/[^0-9]/g,''); }
+
+function renumberRows(){
+  [...rowsEl.querySelectorAll('.row-card')].forEach((card, i) => {
+    card.querySelector('[data-el="rowNum"]').textContent = i+1;
+  });
+}
+
+function updateSummary(){
+  const cards = [...rowsEl.querySelectorAll('.row-card')];
+  document.getElementById('sumCount').textContent = cards.length;
+  const total = cards.reduce((s, card) => {
+    if (card.querySelector('[data-field="revenueNA"]').checked) return s;
+    return s + (Number(rawMoney(card.querySelector('[data-field="revenue"]').value)) || 0);
+  }, 0);
+  document.getElementById('sumRevenue').textContent = Math.round(total/10000).toLocaleString('ko-KR');
+}
+
+function groupMembersForDisplay(){
+  const order = ['HRD사업실', '사업 1팀', '사업 2팀', '사업 3팀', '사업 4팀', '컨설팅팀', '공공AI센터'];
+  const groups = {};
+  members.forEach(m => {
+    const key = m.team || m.affiliation || '기타';
+    if (!groups[key]) groups[key] = [];
+    if (!groups[key].includes(m.name)) groups[key].push(m.name);
+  });
+  const orderedKeys = [...order.filter(k => groups[k]), ...Object.keys(groups).filter(k => !order.includes(k))];
+  return orderedKeys.map(key => ({ label: key, names: groups[key] }));
+}
+
+function renderOwnerChips(card){
+  const wrap = card.querySelector('[data-el="ownerChips"]');
+  const hint = card.querySelector('[data-el="ownerHint"]');
+  const groups = groupMembersForDisplay();
+  wrap.innerHTML = groups.map(g => `
+    <div class="owner-group">
+      <button type="button" class="owner-group-btn" data-group-names="${escapeHtml(g.names.join(','))}">${escapeHtml(g.label)} <span class="cnt">${g.names.length}명</span></button>
+      <div class="owner-chip-row">
+        ${g.names.map(n => `<span class="owner-chip" data-name="${escapeHtml(n)}">${escapeHtml(n)}</span>`).join('')}
+      </div>
+    </div>
+  `).join('');
+  hint.classList.toggle('hidden', members.length === 0);
+  validateOwnerField(card);
+}
+
+function getOwnerNames(str){
+  return String(str).split(',').map(s => s.trim()).filter(Boolean);
+}
+
+function currentTeamMemberNames(){
+  return members.map(m => m.name); // 팀 구분 없이 전체 구성원 이름
+}
+
+function normalizeForMatch(s){
+  return String(s || '').replace(/\s+/g, '');
+}
+
+function findMemberGroup(query){
+  const q = normalizeForMatch(query);
+  if (!q) return null;
+  const affilMatch = members.find(m => normalizeForMatch(m.affiliation) === q);
+  if (affilMatch) {
+    const label = affilMatch.affiliation;
+    const names = [...new Set(members.filter(m => normalizeForMatch(m.affiliation) === q).map(m => m.name))];
+    return { label, names };
+  }
+  const teamMatch = members.find(m => normalizeForMatch(m.team) === q);
+  if (teamMatch) {
+    const label = teamMatch.team;
+    const names = [...new Set(members.filter(m => normalizeForMatch(m.team) === q).map(m => m.name))];
+    return { label, names };
+  }
+  return null;
+}
+
+function renderOwnerTags(card){
+  const box = card.querySelector('[data-el="ownerCombobox"]');
+  const typeahead = card.querySelector('.owner-typeahead');
+  const hidden = card.querySelector('[data-field="owner"]');
+  box.querySelectorAll('.owner-tag').forEach(t => t.remove());
+  const names = getOwnerNames(hidden.value);
+  const holder = document.createElement('div');
+  holder.innerHTML = names.map(n => `<span class="owner-tag" data-name="${escapeHtml(n)}">${escapeHtml(n)}<button type="button" class="owner-tag-remove" data-action="removeOwnerTag" aria-label="${escapeHtml(n)} 삭제"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></span>`).join('');
+  while (holder.firstChild) box.insertBefore(holder.firstChild, typeahead);
+}
+
+function validateOwnerField(card){
+  const input = card.querySelector('[data-field="owner"]');
+  const box = card.querySelector('[data-el="ownerCombobox"]');
+  const hint = card.querySelector('[data-el="ownerWarnHint"]');
+  const known = currentTeamMemberNames();
+  renderOwnerTags(card);
+  if (!known.length) { box.classList.remove('owner-warn'); hint.classList.add('hidden'); return; }
+  const names = getOwnerNames(input.value);
+  const unmatched = names.filter(n => !known.includes(n));
+  const showWarn = names.length > 0 && unmatched.length > 0;
+  box.classList.toggle('owner-warn', showWarn);
+  if (showWarn) {
+    hint.textContent = `명단에 없는 이름이에요: ${unmatched.join(', ')}`;
+    hint.classList.remove('hidden');
+  } else {
+    hint.classList.add('hidden');
+  }
+}
+
+function renderOwnerSuggestions(card){
+  const typeahead = card.querySelector('.owner-typeahead');
+  const hidden = card.querySelector('[data-field="owner"]');
+  const box = card.querySelector('[data-el="ownerSuggest"]');
+  const rawQuery = typeahead.value.trim();
+  const query = rawQuery.toLowerCase();
+  const alreadyPicked = getOwnerNames(hidden.value);
+  const known = members.filter(m => !alreadyPicked.includes(m.name));
+
+  const group = findMemberGroup(rawQuery);
+  const groupHtml = group
+    ? `<div class="owner-suggest-item group-item" data-group-names="${escapeHtml(group.names.join(','))}">"${escapeHtml(group.label)}" 전체 ${group.names.length}명 한번에 추가</div>`
+    : '';
+
+  const matches = query
+    ? known.filter(m => m.name.toLowerCase().includes(query))
+    : known; // 아직 아무것도 안 쳤으면 전체 구성원을 기본 후보로 보여줌
+
+  if (!groupHtml && !matches.length) { box.classList.add('hidden'); box.innerHTML = ''; return; }
+  box.innerHTML = groupHtml + matches.map(m => `<div class="owner-suggest-item" data-name="${escapeHtml(m.name)}">${escapeHtml(m.name)}</div>`).join('');
+  box.classList.remove('hidden');
+}
+
+function renderClientSuggestions(card){
+  const input = card.querySelector('[data-field="client"]');
+  const box = card.querySelector('[data-el="clientSuggest"]');
+  const query = input.value.trim().toLowerCase();
+  const seen = new Set();
+  const matches = [];
+  teamHistory
+    .slice()
+    .sort((a, b) => String(b.Week).localeCompare(String(a.Week)))
+    .forEach(r => {
+      const name = String(r.Client || '').trim();
+      if (!name || seen.has(name)) return;
+      if (query && !name.toLowerCase().includes(query)) return;
+      seen.add(name);
+      matches.push(name);
+    });
+  if (!matches.length) { box.classList.add('hidden'); box.innerHTML = ''; return; }
+  box.innerHTML = matches.map(name =>
+    `<div class="lg-suggest-item" data-client="${escapeHtml(name)}"><span>${escapeHtml(name)}</span></div>`
+  ).join('');
+  box.classList.remove('hidden');
+}
+
+function renderProjectSuggestions(card){
+  const input = card.querySelector('[data-field="project"]');
+  const box = card.querySelector('[data-el="projectSuggest"]');
+  const query = input.value.trim().toLowerCase();
+  const client = card.querySelector('[data-field="client"]').value.trim().toLowerCase();
+
+  const pool = client
+    ? teamHistory.filter(r => String(r.Client || '').trim().toLowerCase() === client)
+    : teamHistory;
+
+  const seen = new Set();
+  const matches = [];
+  pool
+    .slice()
+    .sort((a, b) => String(b.Week).localeCompare(String(a.Week)))
+    .forEach(r => {
+      const name = String(r.Project || '').trim();
+      if (!name || seen.has(name)) return;
+      if (query && !name.toLowerCase().includes(query)) return;
+      seen.add(name);
+      matches.push({ name, client: r.Client });
+    });
+  if (!matches.length) { box.classList.add('hidden'); box.innerHTML = ''; return; }
+  box.innerHTML = matches.map(m =>
+    `<div class="lg-suggest-item" data-project="${escapeHtml(m.name)}"><span>${escapeHtml(m.name)}</span>${!client ? `<span class="sub">${escapeHtml(m.client)}</span>` : ''}</div>`
+  ).join('');
+  box.classList.remove('hidden');
+}
+
+function addNamesToOwnerField(card, names){
+  const hidden = card.querySelector('[data-field="owner"]');
+  const typeahead = card.querySelector('.owner-typeahead');
+  const parts = getOwnerNames(hidden.value);
+  names.forEach(n => { if (!parts.includes(n)) parts.push(n); });
+  hidden.value = parts.join(', ');
+  typeahead.value = '';
+  renderOwnerChips(card);
+}
+
+function fillRowFromHistory(card, client, project){
+  const matches = teamHistory.filter(r =>
+    String(r.Client || '').trim() === client && String(r.Project || '').trim() === project
+  );
+  if (!matches.length) return;
+  matches.sort((a, b) => String(b.Week).localeCompare(String(a.Week)));
+  const latest = matches[0];
+
+  card.querySelector('[data-field="owner"]').value = latest.Owner || '';
+  validateOwnerField(card);
+
+  const group = card.querySelector('.stage-group');
+  group.querySelectorAll('.stage-btn').forEach(b => b.classList.remove('active'));
+  if (latest.Stage) {
+    group.dataset.value = latest.Stage;
+    const btn = group.querySelector(`[data-stage="${latest.Stage}"]`);
+    if (btn) btn.classList.add('active');
+  }
+
+  if (latest.Revenue === '해당없음' || latest.Revenue === '-') {
+    card.querySelector('[data-field="revenueNA"]').checked = true;
+    toggleRevenueNA(card, true);
+  } else if (latest.Revenue) {
+    card.querySelector('[data-field="revenueNA"]').checked = false;
+    toggleRevenueNA(card, false);
+    card.querySelector('[data-field="revenue"]').value = formatMoney(latest.Revenue);
+  }
+
+  if (latest.Period === '해당없음' || latest.Period === '-') {
+    card.querySelector('[data-field="periodNA"]').checked = true;
+    togglePeriodNA(card, true);
+  } else if (latest.Period) {
+    card.querySelector('[data-field="periodNA"]').checked = false;
+    togglePeriodNA(card, false);
+    const manual = card.querySelector('[data-field="periodManual"]');
+    manual.value = latest.Period;
+    manual.classList.remove('hidden');
+    card.querySelector('[data-el="periodCalendarWrap"]').classList.add('hidden');
+    card.querySelector('[data-action="togglePeriodMode"]').textContent = '달력으로 전환';
+  }
+
+  const lastWeekEl = card.querySelector('[data-field="lastWeek"]');
+  if (!lastWeekEl.value.trim() && latest.ThisWeek) {
+    lastWeekEl.value = latest.ThisWeek;
+  }
+  updateSummary();
+}
+
+function addRow(prefill){
+  const node = tpl.content.cloneNode(true);
+  rowsEl.appendChild(node);
+  const card = rowsEl.lastElementChild;
+  renderOwnerChips(card);
+  renumberRows();
+
+  if (prefill) {
+    card.querySelector('[data-field="client"]').value = prefill.client || '';
+    card.querySelector('[data-field="owner"]').value = prefill.owner || '';
+    card.querySelector('[data-field="project"]').value = prefill.project || '';
+    card.querySelector('[data-field="lastWeek"]').value = prefill.lastWeek || '';
+    card.querySelector('[data-field="thisWeek"]').value = prefill.thisWeek || '';
+    card.querySelector('[data-field="nextWeek"]').value = prefill.nextWeek || '';
+    if (prefill.revenue === '-' || prefill.revenue === '해당없음') {
+      card.querySelector('[data-field="revenueNA"]').checked = true;
+      toggleRevenueNA(card, true);
+    } else {
+      card.querySelector('[data-field="revenue"]').value = formatMoney(prefill.revenue || '');
+    }
+    if (prefill.period === '-' || prefill.period === '해당없음') {
+      card.querySelector('[data-field="periodNA"]').checked = true;
+      togglePeriodNA(card, true);
+    } else if (prefill.period) {
+      const manual = card.querySelector('[data-field="periodManual"]');
+      manual.value = prefill.period;
+      manual.classList.remove('hidden');
+      card.querySelector('[data-el="periodCalendarWrap"]').classList.add('hidden');
+      card.querySelector('[data-action="togglePeriodMode"]').textContent = '달력으로 전환';
+    }
+    const group = card.querySelector('.stage-group');
+    if (prefill.stage) {
+      group.dataset.value = prefill.stage;
+      const btn = group.querySelector(`[data-stage="${prefill.stage}"]`);
+      if (btn) btn.classList.add('active');
+    }
+    if (prefill.continued) card.querySelector('[data-el="continuedTag"]').classList.remove('hidden');
+    validateOwnerField(card);
+  }
+  updateSummary();
+  return card;
+}
+document.getElementById('addRow').addEventListener('click', () => { formDirty = true; addRow(); });
+
+function togglePeriodNA(card, checked){
+  card.querySelector('[data-el="periodInputWrap"]').classList.toggle('hidden', checked);
+  card.querySelector('[data-el="periodNaNote"]').classList.toggle('hidden', !checked);
+}
+function toggleRevenueNA(card, checked){
+  card.querySelector('[data-field="revenue"]').classList.toggle('hidden', checked);
+  card.querySelector('[data-el="revenueNaNote"]').classList.toggle('hidden', !checked);
+  updateSummary();
+}
+
+rowsEl.addEventListener('click', (e) => {
+  formDirty = true;
+  if (e.target.closest('[data-action="remove"]')) {
+    e.target.closest('.row-card').remove();
+    renumberRows();
+    updateSummary();
+  }
+  const stageBtn = e.target.closest('.stage-btn');
+  if (stageBtn) {
+    const group = stageBtn.closest('.stage-group');
+    group.querySelectorAll('.stage-btn').forEach(b => b.classList.remove('active'));
+    stageBtn.classList.add('active');
+    group.dataset.value = stageBtn.dataset.stage;
+  }
+  const ownerChip = e.target.closest('.owner-chip');
+  if (ownerChip) {
+    const card = ownerChip.closest('.row-card');
+    const hidden = card.querySelector('[data-field="owner"]');
+    const names = getOwnerNames(hidden.value);
+    const name = ownerChip.dataset.name;
+    if (names.includes(name)) {
+      hidden.value = names.filter(n => n !== name).join(', ');
+      ownerChip.classList.remove('selected');
+    } else {
+      names.push(name);
+      hidden.value = names.join(', ');
+      ownerChip.classList.add('selected');
+    }
+    validateOwnerField(card);
+  }
+
+  const tagRemove = e.target.closest('[data-action="removeOwnerTag"]');
+  if (tagRemove) {
+    const card = tagRemove.closest('.row-card');
+    const name = tagRemove.closest('.owner-tag').dataset.name;
+    const hidden = card.querySelector('[data-field="owner"]');
+    hidden.value = getOwnerNames(hidden.value).filter(n => n !== name).join(', ');
+    renderOwnerChips(card);
+    return;
+  }
+
+  const clearOwnerBtn = e.target.closest('[data-action="clearOwner"]');
+  if (clearOwnerBtn) {
+    const card = clearOwnerBtn.closest('.row-card');
+    card.querySelector('[data-field="owner"]').value = '';
+    card.querySelector('.owner-typeahead').value = '';
+    renderOwnerChips(card);
+    return;
+  }
+
+  const groupBtn = e.target.closest('.owner-group-btn');
+  if (groupBtn) {
+    const card = groupBtn.closest('.row-card');
+    const names = groupBtn.dataset.groupNames.split(',').filter(Boolean);
+    addNamesToOwnerField(card, names);
+    return;
+  }
+
+  const groupItem = e.target.closest('.owner-suggest-item.group-item');
+  if (groupItem) {
+    const card = groupItem.closest('.row-card');
+    const typeahead = card.querySelector('.owner-typeahead');
+    const groupNames = groupItem.dataset.groupNames.split(',').filter(Boolean);
+    addNamesToOwnerField(card, groupNames);
+    card.querySelector('[data-el="ownerSuggest"]').classList.add('hidden');
+    typeahead.focus();
+    return;
+  }
+
+  const suggestItem = e.target.closest('.owner-suggest-item');
+  if (suggestItem) {
+    const card = suggestItem.closest('.row-card');
+    const typeahead = card.querySelector('.owner-typeahead');
+    addNamesToOwnerField(card, [suggestItem.dataset.name]);
+    card.querySelector('[data-el="ownerSuggest"]').classList.add('hidden');
+    typeahead.focus();
+  }
+
+  const clientItem = e.target.closest('[data-el="clientSuggest"] .lg-suggest-item');
+  if (clientItem) {
+    const card = clientItem.closest('.row-card');
+    card.querySelector('[data-field="client"]').value = clientItem.dataset.client;
+    card.querySelector('[data-el="clientSuggest"]').classList.add('hidden');
+    card.querySelector('[data-field="project"]').focus();
+  }
+
+  const projectItem = e.target.closest('[data-el="projectSuggest"] .lg-suggest-item');
+  if (projectItem) {
+    const card = projectItem.closest('.row-card');
+    const clientInput = card.querySelector('[data-field="client"]');
+    if (!clientInput.value.trim()) {
+      const match = teamHistory.find(r => String(r.Project || '').trim() === projectItem.dataset.project);
+      if (match) clientInput.value = match.Client || '';
+    }
+    card.querySelector('[data-field="project"]').value = projectItem.dataset.project;
+    card.querySelector('[data-el="projectSuggest"]').classList.add('hidden');
+    fillRowFromHistory(card, clientInput.value.trim(), projectItem.dataset.project);
+  }
+
+  const toggle = e.target.closest('[data-action="togglePeriodMode"]');
+  if (toggle) {
+    const card = toggle.closest('.row-card');
+    const cal = card.querySelector('[data-el="periodCalendarWrap"]');
+    const manual = card.querySelector('[data-field="periodManual"]');
+    const usingManual = !manual.classList.contains('hidden');
+    if (usingManual) {
+      manual.classList.add('hidden'); cal.classList.remove('hidden');
+      toggle.textContent = '직접 입력으로 전환';
+    } else {
+      cal.classList.add('hidden'); manual.classList.remove('hidden');
+      toggle.textContent = '달력으로 전환';
+    }
+  }
+});
+
+rowsEl.addEventListener('change', (e) => {
+  formDirty = true;
+  if (e.target.dataset.field === 'periodNA') togglePeriodNA(e.target.closest('.row-card'), e.target.checked);
+  if (e.target.dataset.field === 'revenueNA') toggleRevenueNA(e.target.closest('.row-card'), e.target.checked);
+  if (e.target.dataset.field === 'completed') {
+    e.target.closest('.row-card').classList.toggle('is-completed', e.target.checked);
+  }
+});
+
+function tryAutoCommitOwnerSpace(card){
+  const typeahead = card.querySelector('.owner-typeahead');
+  const val = typeahead.value;
+  if (!val.endsWith(' ') || val.trim() === '') return;
+  const candidate = val.trim();
+  if (!currentTeamMemberNames().includes(candidate)) return; // 완전히 일치하는 이름일 때만 자동 확정
+  addNamesToOwnerField(card, [candidate]);
+}
+
+rowsEl.addEventListener('input', (e) => {
+  formDirty = true;
+  if (e.target.dataset.field === 'revenue') {
+    e.target.value = formatMoney(e.target.value);
+    updateSummary();
+  }
+  if (e.target.classList.contains('owner-typeahead')) {
+    const card = e.target.closest('.row-card');
+    tryAutoCommitOwnerSpace(card);
+    renderOwnerSuggestions(card);
+  }
+  if (e.target.dataset.field === 'client') {
+    renderClientSuggestions(e.target.closest('.row-card'));
+  }
+  if (e.target.dataset.field === 'project') {
+    renderProjectSuggestions(e.target.closest('.row-card'));
+  }
+});
+
+rowsEl.addEventListener('keydown', (e) => {
+  if (e.target.classList.contains('owner-typeahead') && e.key === 'Enter') {
+    e.preventDefault();
+    const card = e.target.closest('.row-card');
+    const name = e.target.value.trim();
+    if (name) addNamesToOwnerField(card, [name]);
+    card.querySelector('[data-el="ownerSuggest"]').classList.add('hidden');
+  }
+  if (e.target.classList.contains('owner-typeahead') && e.key === 'Backspace' && !e.target.value) {
+    const card = e.target.closest('.row-card');
+    const hidden = card.querySelector('[data-field="owner"]');
+    const names = getOwnerNames(hidden.value);
+    if (names.length) {
+      names.pop();
+      hidden.value = names.join(', ');
+      renderOwnerChips(card);
+    }
+  }
+});
+
+rowsEl.addEventListener('focusin', (e) => {
+  if (e.target.classList.contains('owner-typeahead')) renderOwnerSuggestions(e.target.closest('.row-card'));
+  if (e.target.dataset.field === 'client') renderClientSuggestions(e.target.closest('.row-card'));
+  if (e.target.dataset.field === 'project') renderProjectSuggestions(e.target.closest('.row-card'));
+});
+
+rowsEl.addEventListener('focusout', (e) => {
+  if (e.target.classList.contains('owner-typeahead')) {
+    const card = e.target.closest('.row-card');
+    setTimeout(() => {
+      card.querySelector('[data-el="ownerSuggest"]').classList.add('hidden');
+    }, 150);
+  }
+  if (e.target.dataset.field === 'client') {
+    const card = e.target.closest('.row-card');
+    setTimeout(() => card.querySelector('[data-el="clientSuggest"]').classList.add('hidden'), 150);
+  }
+  if (e.target.dataset.field === 'project') {
+    const card = e.target.closest('.row-card');
+    setTimeout(() => card.querySelector('[data-el="projectSuggest"]').classList.add('hidden'), 150);
+  }
+});
+
+async function loadPreviousWeekRows(opts){
+  const silent = opts && opts.silent;
+  const statusEl = document.getElementById('status');
+  const prevMonday = new Date(currentMonday); prevMonday.setDate(prevMonday.getDate()-7);
+  const week = toISO(prevMonday);
+  if (!silent) { statusEl.textContent = '지난주 내용을 불러오는 중...'; statusEl.className = 'status'; }
+  try {
+    const data = await fetch(`${API_URL}?action=teamData&week=${week}`).then(r => r.json());
+    const rows = data.filter(r => r.Team === currentTeam && String(r.Completed).toUpperCase() !== 'TRUE');
+    if (!rows.length) {
+      if (!silent) { statusEl.textContent = '지난주에 이 팀이 입력한 내용이 없습니다.'; statusEl.className = 'status err'; }
+      return false;
+    }
+    rowsEl.innerHTML = '';
+    rows.forEach(r => addRow({
+      client: r.Client, owner: r.Owner, project: r.Project, stage: r.Stage,
+      lastWeek: r.ThisWeek, thisWeek: r.NextWeek, period: r.Period, revenue: r.Revenue, continued: true
+    }));
+    statusEl.textContent = `지난주(${week}) 입력 내용 ${rows.length}건을 불러왔어요. 금주·차주내용을 확인/수정해주세요.`;
+    statusEl.className = 'status ok';
+    formDirty = false;
+    return true;
+  } catch (err) {
+    if (!silent) { statusEl.textContent = '불러오기 실패: ' + err.message; statusEl.className = 'status err'; }
+    return false;
+  }
+}
+
+document.getElementById('loadPrevBtn').addEventListener('click', () => loadPreviousWeekRows());
+
+document.getElementById('submitBtn').addEventListener('click', async () => {
+  const statusEl = document.getElementById('status');
+  const week = toISO(currentMonday);
+
+  const rowCards = [...rowsEl.querySelectorAll('.row-card')];
+  if (rowCards.length === 0) { statusEl.textContent = '최소 1개 이상의 항목을 입력해 주세요.'; statusEl.className = 'status err'; return; }
+
+  const rows = rowCards.map(card => {
+    const get = (f) => card.querySelector('[data-field="'+f+'"]').value.trim();
+    const stageGroup = card.querySelector('.stage-group');
+
+    let period;
+    if (card.querySelector('[data-field="periodNA"]').checked) {
+      period = '해당없음';
+    } else {
+      const manual = card.querySelector('[data-field="periodManual"]');
+      period = manual.value.trim();
+      if (!period) {
+        const s = get('periodStart'), en = get('periodEnd');
+        if (s && en) period = `${s.replace(/-/g,'.')}~${en.replace(/-/g,'.')}`;
+      }
+    }
+    const revenue = card.querySelector('[data-field="revenueNA"]').checked ? '해당없음' : rawMoney(get('revenue'));
+
+    return {
+      client: get('client'), owner: get('owner'), project: get('project'),
+      stage: stageGroup.dataset.value || '', lastWeek: get('lastWeek'), thisWeek: get('thisWeek'), nextWeek: get('nextWeek'),
+      period, revenue, completed: card.querySelector('[data-field="completed"]').checked
+    };
+  }).filter(r => r.client || r.project);
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true; statusEl.textContent = '제출 중...'; statusEl.className = 'status';
+
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ type: 'team', team: currentTeam, week, rows })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      statusEl.textContent = `제출 완료 (${data.count}건 저장됨)`;
+      statusEl.className = 'status ok';
+      formDirty = false;
+    } else {
+      throw new Error(data.error || '알 수 없는 오류');
+    }
+  } catch (err) {
+    statusEl.textContent = '제출 실패: ' + err.message;
+    statusEl.className = 'status err';
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+window.addEventListener('beforeunload', (e) => {
+  if (!formDirty) return;
+  e.preventDefault();
+  e.returnValue = '제출하지 않고 나가면 작성하던 데이터는 사라집니다.';
+  return e.returnValue;
+});
+</script>
+</body>
+</html>
