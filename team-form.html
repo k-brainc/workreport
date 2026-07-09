@@ -71,7 +71,8 @@
 
   .row-card{position:relative;background:var(--card);border:none;border-radius:22px;margin-bottom:18px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.04);display:none;}
   .row-card.active{display:block;}
-  .field-lg-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .field-lg-row{display:grid;grid-template-columns:1.5fr 1fr 0.9fr;gap:16px;}
+  .readonly-field{background:#EEEBE4 !important;color:var(--sub) !important;cursor:default;}
 
   @media (max-width:680px){
     .field-lg-row, .grid2, .grid3col{grid-template-columns:1fr !important;}
@@ -238,18 +239,19 @@
     <div class="row-body">
       <div class="field-lg-row">
         <div class="field field-lg">
-          <label><svg class="icon" viewBox="0 0 24 24"><path d="M4 21V8a2 2 0 012-2h4V4a2 2 0 012-2h0a2 2 0 012 2v2h4a2 2 0 012 2v13"/><path d="M9 21v-4h6v4M4 21h16"/></svg> 고객사명</label>
+          <label><svg class="icon" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h4l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2V6z"/></svg> 사업명</label>
           <div class="lg-wrap">
-            <input type="text" class="field-lg-input" data-field="client" placeholder="예: NIA (이전에 입력한 고객사가 뜹니다)" autocomplete="off">
-            <div class="lg-suggest hidden" data-el="clientSuggest"></div>
+            <input type="text" class="field-lg-input" data-field="project" placeholder="사업명을 입력하면 사업 목록에서 찾아드려요" autocomplete="off">
+            <div class="lg-suggest hidden" data-el="projectSuggest"></div>
           </div>
         </div>
         <div class="field field-lg">
-          <label><svg class="icon" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h4l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2V6z"/></svg> 사업명</label>
-          <div class="lg-wrap">
-            <input type="text" class="field-lg-input" data-field="project" placeholder="예: 2026년 AI챔피언 교육" autocomplete="off">
-            <div class="lg-suggest hidden" data-el="projectSuggest"></div>
-          </div>
+          <label><svg class="icon" viewBox="0 0 24 24"><path d="M4 21V8a2 2 0 012-2h4V4a2 2 0 012-2h0a2 2 0 012 2v2h4a2 2 0 012 2v13"/><path d="M9 21v-4h6v4M4 21h16"/></svg> 고객사명</label>
+          <input type="text" class="field-lg-input readonly-field" data-field="client" placeholder="사업명 선택 시 자동 입력" readonly>
+        </div>
+        <div class="field field-lg">
+          <label><svg class="icon" viewBox="0 0 24 24"><path d="M9 3h6l1 3h3a1 1 0 011 1v3l-3 1v9a2 2 0 01-2 2H10a2 2 0 01-2-2v-9l-3-1V7a1 1 0 011-1h3l1-3z"/></svg> 사업코드</label>
+          <input type="text" class="field-lg-input readonly-field" data-field="projectCode" placeholder="사업명 선택 시 자동 입력" readonly>
         </div>
       </div>
 
@@ -309,7 +311,7 @@
             <label><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 8h5a2 2 0 010 4H9m0 0h5m-5 0v4"/></svg> 매출(Vat별도)</label>
             <label class="na-check"><input type="checkbox" data-field="revenueNA"> 해당없음</label>
           </div>
-          <input type="text" data-field="revenue" placeholder="예: 50,000,000" inputmode="numeric">
+          <input type="text" class="readonly-field" data-field="revenue" placeholder="사업명 선택 시 자동 입력" inputmode="numeric" readonly>
           <div class="na-note hidden" data-el="revenueNaNote">해당없음으로 표시됩니다</div>
         </div>
       </div>
@@ -340,7 +342,7 @@ let formDirty = false;
 let activeRowIndex = 0;
 let currentMonday = mondayOf(new Date());
 let members = [];
-let teamHistory = [];
+let projectMaster = [];
 
 function escapeHtml(str){
   return String(str == null ? '' : str)
@@ -406,9 +408,8 @@ async function selectTeam(team){
     } catch (e) { members = []; }
   }
   try {
-    const hist = await fetch(`${API_URL}?action=teamData`).then(r => r.json());
-    teamHistory = hist; // 고객사명/사업명 자동완성은 팀 구분 없이 DB 전체 이력을 사용
-  } catch (e) { teamHistory = []; }
+    projectMaster = await fetch(`${API_URL}?action=projectMaster`).then(r => r.json());
+  } catch (e) { projectMaster = []; }
   if (!rowsEl.children.length) {
     const loaded = await loadPreviousWeekRows({ silent: true });
     if (!loaded) addRow();
@@ -600,54 +601,22 @@ function renderOwnerSuggestions(card){
   box.classList.remove('hidden');
 }
 
-function renderClientSuggestions(card){
-  const input = card.querySelector('[data-field="client"]');
-  const box = card.querySelector('[data-el="clientSuggest"]');
-  const query = input.value.trim().toLowerCase();
-  const seen = new Set();
-  const matches = [];
-  teamHistory
-    .slice()
-    .sort((a, b) => String(b.Week).localeCompare(String(a.Week)))
-    .forEach(r => {
-      const name = String(r.Client || '').trim();
-      if (!name || seen.has(name)) return;
-      if (query && !name.toLowerCase().includes(query)) return;
-      seen.add(name);
-      matches.push(name);
-    });
-  if (!matches.length) { box.classList.add('hidden'); box.innerHTML = ''; return; }
-  box.innerHTML = matches.map(name =>
-    `<div class="lg-suggest-item" data-client="${escapeHtml(name)}"><span>${escapeHtml(name)}</span></div>`
-  ).join('');
-  box.classList.remove('hidden');
-}
-
 function renderProjectSuggestions(card){
   const input = card.querySelector('[data-field="project"]');
   const box = card.querySelector('[data-el="projectSuggest"]');
   const query = input.value.trim().toLowerCase();
-  const client = card.querySelector('[data-field="client"]').value.trim().toLowerCase();
-
-  const pool = client
-    ? teamHistory.filter(r => String(r.Client || '').trim().toLowerCase() === client)
-    : teamHistory;
 
   const seen = new Set();
   const matches = [];
-  pool
-    .slice()
-    .sort((a, b) => String(b.Week).localeCompare(String(a.Week)))
-    .forEach(r => {
-      const name = String(r.Project || '').trim();
-      if (!name || seen.has(name)) return;
-      if (query && !name.toLowerCase().includes(query)) return;
-      seen.add(name);
-      matches.push({ name, client: r.Client });
-    });
+  projectMaster.forEach(p => {
+    if (!p.project || seen.has(p.project)) return;
+    if (query && !p.project.toLowerCase().includes(query)) return;
+    seen.add(p.project);
+    matches.push(p);
+  });
   if (!matches.length) { box.classList.add('hidden'); box.innerHTML = ''; return; }
   box.innerHTML = matches.map(m =>
-    `<div class="lg-suggest-item" data-project="${escapeHtml(m.name)}"><span>${escapeHtml(m.name)}</span>${!client ? `<span class="sub">${escapeHtml(m.client)}</span>` : ''}</div>`
+    `<div class="lg-suggest-item" data-project="${escapeHtml(m.project)}"><span>${escapeHtml(m.project)}</span><span class="sub">${escapeHtml(m.client)}${m.code ? ' · ' + escapeHtml(m.code) : ''}</span></div>`
   ).join('');
   box.classList.remove('hidden');
 }
@@ -662,52 +631,25 @@ function addNamesToOwnerField(card, names){
   renderOwnerChips(card);
 }
 
-function fillRowFromHistory(card, client, project){
-  const matches = teamHistory.filter(r =>
-    String(r.Client || '').trim() === client && String(r.Project || '').trim() === project
-  );
-  if (!matches.length) return;
-  matches.sort((a, b) => String(b.Week).localeCompare(String(a.Week)));
-  const latest = matches[0];
+// 사업명 선택 시 고객사/사업코드/매출을 사업 목록 기준으로 채우고 잠급니다.
+function applyProjectMasterEntry(card, entry){
+  card.querySelector('[data-field="client"]').value = entry.client || '';
+  card.querySelector('[data-field="projectCode"]').value = entry.code || '';
 
-  card.querySelector('[data-field="owner"]').value = latest.Owner || '';
-  validateOwnerField(card);
-
-  const group = card.querySelector('.stage-group');
-  group.querySelectorAll('.stage-btn').forEach(b => b.classList.remove('active'));
-  if (latest.Stage) {
-    group.dataset.value = latest.Stage;
-    const btn = group.querySelector(`[data-stage="${latest.Stage}"]`);
-    if (btn) btn.classList.add('active');
-  }
-
-  if (latest.Revenue === '해당없음' || latest.Revenue === '-') {
-    card.querySelector('[data-field="revenueNA"]').checked = true;
+  const revenueNA = card.querySelector('[data-field="revenueNA"]');
+  if (entry.revenue === '' || entry.revenue == null) {
+    revenueNA.checked = true;
     toggleRevenueNA(card, true);
-  } else if (latest.Revenue) {
-    card.querySelector('[data-field="revenueNA"]').checked = false;
+  } else {
+    revenueNA.checked = false;
     toggleRevenueNA(card, false);
-    card.querySelector('[data-field="revenue"]').value = formatMoney(latest.Revenue);
-  }
-
-  if (latest.Period === '해당없음' || latest.Period === '-') {
-    card.querySelector('[data-field="periodNA"]').checked = true;
-    togglePeriodNA(card, true);
-  } else if (latest.Period) {
-    card.querySelector('[data-field="periodNA"]').checked = false;
-    togglePeriodNA(card, false);
-    const manual = card.querySelector('[data-field="periodManual"]');
-    manual.value = latest.Period;
-    manual.classList.remove('hidden');
-    card.querySelector('[data-el="periodCalendarWrap"]').classList.add('hidden');
-    card.querySelector('[data-action="togglePeriodMode"]').textContent = '달력으로 전환';
-  }
-
-  const lastWeekEl = card.querySelector('[data-field="lastWeek"]');
-  if (!lastWeekEl.value.trim() && latest.ThisWeek) {
-    lastWeekEl.value = latest.ThisWeek;
+    card.querySelector('[data-field="revenue"]').value = formatMoney(entry.revenue);
   }
   updateSummary();
+}
+
+function findProjectMasterEntry(projectName){
+  return projectMaster.find(p => p.project === projectName);
 }
 
 function addRow(prefill){
@@ -719,6 +661,7 @@ function addRow(prefill){
 
   if (prefill) {
     card.querySelector('[data-field="client"]').value = prefill.client || '';
+    card.querySelector('[data-field="projectCode"]').value = prefill.projectCode || '';
     card.querySelector('[data-field="owner"]').value = prefill.owner || '';
     card.querySelector('[data-field="project"]').value = prefill.project || '';
     card.querySelector('[data-field="lastWeek"]').value = prefill.lastWeek || '';
@@ -846,25 +789,13 @@ rowsEl.addEventListener('click', (e) => {
     typeahead.focus();
   }
 
-  const clientItem = e.target.closest('[data-el="clientSuggest"] .lg-suggest-item');
-  if (clientItem) {
-    const card = clientItem.closest('.row-card');
-    card.querySelector('[data-field="client"]').value = clientItem.dataset.client;
-    card.querySelector('[data-el="clientSuggest"]').classList.add('hidden');
-    card.querySelector('[data-field="project"]').focus();
-  }
-
   const projectItem = e.target.closest('[data-el="projectSuggest"] .lg-suggest-item');
   if (projectItem) {
     const card = projectItem.closest('.row-card');
-    const clientInput = card.querySelector('[data-field="client"]');
-    if (!clientInput.value.trim()) {
-      const match = teamHistory.find(r => String(r.Project || '').trim() === projectItem.dataset.project);
-      if (match) clientInput.value = match.Client || '';
-    }
     card.querySelector('[data-field="project"]').value = projectItem.dataset.project;
     card.querySelector('[data-el="projectSuggest"]').classList.add('hidden');
-    fillRowFromHistory(card, clientInput.value.trim(), projectItem.dataset.project);
+    const entry = findProjectMasterEntry(projectItem.dataset.project);
+    if (entry) applyProjectMasterEntry(card, entry);
   }
 
   const toggle = e.target.closest('[data-action="togglePeriodMode"]');
@@ -913,9 +844,6 @@ rowsEl.addEventListener('input', (e) => {
     tryAutoCommitOwnerSpace(card);
     renderOwnerSuggestions(card);
   }
-  if (e.target.dataset.field === 'client') {
-    renderClientSuggestions(e.target.closest('.row-card'));
-  }
   if (e.target.dataset.field === 'project') {
     renderProjectSuggestions(e.target.closest('.row-card'));
   }
@@ -943,7 +871,6 @@ rowsEl.addEventListener('keydown', (e) => {
 
 rowsEl.addEventListener('focusin', (e) => {
   if (e.target.classList.contains('owner-typeahead')) renderOwnerSuggestions(e.target.closest('.row-card'));
-  if (e.target.dataset.field === 'client') renderClientSuggestions(e.target.closest('.row-card'));
   if (e.target.dataset.field === 'project') renderProjectSuggestions(e.target.closest('.row-card'));
 });
 
@@ -953,10 +880,6 @@ rowsEl.addEventListener('focusout', (e) => {
     setTimeout(() => {
       card.querySelector('[data-el="ownerSuggest"]').classList.add('hidden');
     }, 150);
-  }
-  if (e.target.dataset.field === 'client') {
-    const card = e.target.closest('.row-card');
-    setTimeout(() => card.querySelector('[data-el="clientSuggest"]').classList.add('hidden'), 150);
   }
   if (e.target.dataset.field === 'project') {
     const card = e.target.closest('.row-card');
@@ -979,7 +902,7 @@ async function loadPreviousWeekRows(opts){
     }
     rowsEl.innerHTML = '';
     rows.forEach(r => addRow({
-      client: r.Client, owner: r.Owner, project: r.Project, stage: r.Stage,
+      client: r.Client, owner: r.Owner, project: r.Project, stage: r.Stage, projectCode: r.ProjectCode,
       lastWeek: r.ThisWeek, thisWeek: r.NextWeek, period: r.Period, revenue: r.Revenue, continued: true
     }));
     showRow(0);
@@ -1020,7 +943,7 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
     const revenue = card.querySelector('[data-field="revenueNA"]').checked ? '해당없음' : rawMoney(get('revenue'));
 
     return {
-      client: get('client'), owner: get('owner'), project: get('project'),
+      client: get('client'), owner: get('owner'), project: get('project'), projectCode: get('projectCode'),
       stage: stageGroup.dataset.value || '', lastWeek: get('lastWeek'), thisWeek: get('thisWeek'), nextWeek: get('nextWeek'),
       period, revenue, completed: card.querySelector('[data-field="completed"]').checked
     };
