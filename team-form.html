@@ -62,7 +62,20 @@
   .summary-chip .num{font-size:19px;font-weight:600;letter-spacing:-0.01em;}
   .summary-chip .lbl{font-size:11px;color:var(--sub);}
 
-  .row-card{position:relative;background:var(--card);border:none;border-radius:22px;margin-bottom:18px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
+  .row-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+  .row-tab{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:980px;border:1px solid var(--line);background:var(--card);color:var(--sub);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .15s;}
+  .row-tab:hover{border-color:var(--blue);color:var(--blue);}
+  .row-tab.active{background:var(--blue);color:#fff;border-color:var(--blue);}
+  .row-tab .done-dot{width:7px;height:7px;border-radius:50%;background:var(--teal);flex-shrink:0;}
+  .row-tab.active .done-dot{background:#fff;}
+
+  .row-card{position:relative;background:var(--card);border:none;border-radius:22px;margin-bottom:18px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.04);display:none;}
+  .row-card.active{display:block;}
+  .field-lg-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+
+  @media (max-width:680px){
+    .field-lg-row, .grid2, .grid3col{grid-template-columns:1fr !important;}
+  }
   .completed-stamp{display:none;position:absolute;top:50%;left:50%;font-size:56px;font-weight:800;letter-spacing:0.15em;color:rgba(199,71,58,0.55);border:6px solid rgba(199,71,58,0.55);border-radius:16px;padding:8px 32px;transform:translate(-50%,-50%) rotate(-14deg);pointer-events:none;z-index:5;white-space:nowrap;}
   .row-card.is-completed .completed-stamp{display:block;}
   .row-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid #E2E2E0;}
@@ -72,7 +85,7 @@
   .remove-btn:hover{color:var(--danger);background:#FBEAE8;}
 
   .row-body{padding:22px 22px 24px;}
-  .field{display:flex;flex-direction:column;gap:7px;margin-bottom:20px;}
+  .field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;}
   .field:last-child{margin-bottom:0;}
   .field label{font-size:12.5px;color:var(--sub);font-weight:700;display:flex;align-items:center;gap:5px;}
   .field-lg label{font-size:13px;color:var(--ink);font-weight:700;}
@@ -169,7 +182,7 @@
   <div id="step2" class="hidden">
     <div class="team-banner">
       <span class="t-name" id="bannerTeam"></span>
-      <button class="change-team-btn" id="changeTeamBtn" type="button">팀 다시 선택</button>
+      <button class="change-team-btn" id="changeTeamBtn" type="button"><svg class="icon" viewBox="0 0 24 24" style="vertical-align:-2px;margin-right:3px;"><path d="M3 12a9 9 0 1015-6.7M18 3v5h-5"/></svg>팀 다시 선택</button>
     </div>
 
     <div id="step2Loading" class="step2-loading hidden">
@@ -195,6 +208,7 @@
         </div>
       </div>
 
+      <div class="row-tabs" id="rowTabs"></div>
       <div id="rows"></div>
       <button class="add-btn" id="addRow" type="button">
         <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
@@ -222,23 +236,25 @@
       </button>
     </div>
     <div class="row-body">
-      <div class="field field-lg">
-        <label>고객사명</label>
-        <div class="lg-wrap">
-          <input type="text" class="field-lg-input" data-field="client" placeholder="예: NIA (이전에 입력한 고객사가 뜹니다)" autocomplete="off">
-          <div class="lg-suggest hidden" data-el="clientSuggest"></div>
+      <div class="field-lg-row">
+        <div class="field field-lg">
+          <label><svg class="icon" viewBox="0 0 24 24"><path d="M4 21V8a2 2 0 012-2h4V4a2 2 0 012-2h0a2 2 0 012 2v2h4a2 2 0 012 2v13"/><path d="M9 21v-4h6v4M4 21h16"/></svg> 고객사명</label>
+          <div class="lg-wrap">
+            <input type="text" class="field-lg-input" data-field="client" placeholder="예: NIA (이전에 입력한 고객사가 뜹니다)" autocomplete="off">
+            <div class="lg-suggest hidden" data-el="clientSuggest"></div>
+          </div>
         </div>
-      </div>
-      <div class="field field-lg">
-        <label>사업명</label>
-        <div class="lg-wrap">
-          <input type="text" class="field-lg-input" data-field="project" placeholder="예: 2026년 AI챔피언 교육" autocomplete="off">
-          <div class="lg-suggest hidden" data-el="projectSuggest"></div>
+        <div class="field field-lg">
+          <label><svg class="icon" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h4l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2V6z"/></svg> 사업명</label>
+          <div class="lg-wrap">
+            <input type="text" class="field-lg-input" data-field="project" placeholder="예: 2026년 AI챔피언 교육" autocomplete="off">
+            <div class="lg-suggest hidden" data-el="projectSuggest"></div>
+          </div>
         </div>
       </div>
 
       <div class="field">
-        <label>단계</label>
+        <label><svg class="icon" viewBox="0 0 24 24"><path d="M5 3v18M5 4h11l-2 4 2 4H5"/></svg> 단계</label>
         <div class="stage-group" data-field="stageGroup">
           <button type="button" class="stage-btn" data-stage="제안">제안</button>
           <button type="button" class="stage-btn" data-stage="수행">수행</button>
@@ -249,7 +265,7 @@
       </div>
 
       <div class="field">
-        <label>담당</label>
+        <label><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c1.5-4 4.5-6 7-6s5.5 2 7 6"/></svg> 담당</label>
         <div class="owner-combobox" data-el="ownerCombobox">
           <input type="text" class="owner-typeahead" placeholder="이름을 입력하면 명단에서 찾아드려요" autocomplete="off">
           <input type="hidden" data-field="owner">
@@ -264,15 +280,15 @@
       </div>
 
       <div class="grid3col">
-        <div class="field"><label>전주내용</label><textarea data-field="lastWeek" placeholder="지난주 완료한 업무"></textarea></div>
-        <div class="field"><label>금주내용</label><textarea data-field="thisWeek" placeholder="이번주 진행할 업무"></textarea></div>
-        <div class="field"><label>차주내용</label><textarea data-field="nextWeek" placeholder="다음주 진행 예정 업무"></textarea></div>
+        <div class="field"><label><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg> 전주내용</label><textarea data-field="lastWeek" placeholder="지난주 완료한 업무"></textarea></div>
+        <div class="field"><label><svg class="icon" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg> 금주내용</label><textarea data-field="thisWeek" placeholder="이번주 진행할 업무"></textarea></div>
+        <div class="field"><label><svg class="icon" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg> 차주내용</label><textarea data-field="nextWeek" placeholder="다음주 진행 예정 업무"></textarea></div>
       </div>
 
       <div class="grid2">
         <div class="field">
           <div class="field-head">
-            <label>사업기간</label>
+            <label><svg class="icon" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg> 사업기간</label>
             <div style="display:flex;align-items:center;gap:10px;">
               <span class="period-toggle" data-action="togglePeriodMode">직접 입력으로 전환</span>
               <label class="na-check"><input type="checkbox" data-field="periodNA"> 해당없음</label>
@@ -290,7 +306,7 @@
         </div>
         <div class="field">
           <div class="field-head">
-            <label>매출(Vat별도)</label>
+            <label><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 8h5a2 2 0 010 4H9m0 0h5m-5 0v4"/></svg> 매출(Vat별도)</label>
             <label class="na-check"><input type="checkbox" data-field="revenueNA"> 해당없음</label>
           </div>
           <input type="text" data-field="revenue" placeholder="예: 50,000,000" inputmode="numeric">
@@ -300,6 +316,7 @@
 
       <label class="completed-check">
         <input type="checkbox" data-field="completed">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
         이 항목 완료 (다음 주 목록에서 제외)
       </label>
     </div>
@@ -320,6 +337,7 @@ const TEAMS = [
 
 let currentTeam = null;
 let formDirty = false;
+let activeRowIndex = 0;
 let currentMonday = mondayOf(new Date());
 let members = [];
 let teamHistory = [];
@@ -427,10 +445,39 @@ function formatMoney(v){
 function rawMoney(v){ return String(v).replace(/[^0-9]/g,''); }
 
 function renumberRows(){
-  [...rowsEl.querySelectorAll('.row-card')].forEach((card, i) => {
+  const cards = [...rowsEl.querySelectorAll('.row-card')];
+  cards.forEach((card, i) => {
     card.querySelector('[data-el="rowNum"]').textContent = i+1;
   });
+  if (activeRowIndex >= cards.length) activeRowIndex = cards.length - 1;
+  if (activeRowIndex < 0) activeRowIndex = 0;
+  showRow(activeRowIndex);
 }
+
+function showRow(index){
+  const cards = [...rowsEl.querySelectorAll('.row-card')];
+  if (!cards.length) { renderRowTabs(cards); return; }
+  if (index < 0) index = 0;
+  if (index >= cards.length) index = cards.length - 1;
+  activeRowIndex = index;
+  cards.forEach((card, i) => card.classList.toggle('active', i === index));
+  renderRowTabs(cards);
+}
+
+function renderRowTabs(cards){
+  cards = cards || [...rowsEl.querySelectorAll('.row-card')];
+  const tabsEl = document.getElementById('rowTabs');
+  tabsEl.innerHTML = cards.map((card, i) => {
+    const done = card.classList.contains('is-completed');
+    return `<button type="button" class="row-tab ${i === activeRowIndex ? 'active' : ''}" data-row-index="${i}">${done ? '<span class="done-dot"></span>' : ''}항목 ${i+1}</button>`;
+  }).join('');
+}
+
+document.getElementById('rowTabs').addEventListener('click', (e) => {
+  const tab = e.target.closest('.row-tab');
+  if (!tab) return;
+  showRow(Number(tab.dataset.rowIndex));
+});
 
 function updateSummary(){
   const cards = [...rowsEl.querySelectorAll('.row-card')];
@@ -705,7 +752,11 @@ function addRow(prefill){
   updateSummary();
   return card;
 }
-document.getElementById('addRow').addEventListener('click', () => { formDirty = true; addRow(); });
+document.getElementById('addRow').addEventListener('click', () => {
+  formDirty = true;
+  addRow();
+  showRow(rowsEl.children.length - 1);
+});
 
 function togglePeriodNA(card, checked){
   card.querySelector('[data-el="periodInputWrap"]').classList.toggle('hidden', checked);
@@ -838,6 +889,7 @@ rowsEl.addEventListener('change', (e) => {
   if (e.target.dataset.field === 'revenueNA') toggleRevenueNA(e.target.closest('.row-card'), e.target.checked);
   if (e.target.dataset.field === 'completed') {
     e.target.closest('.row-card').classList.toggle('is-completed', e.target.checked);
+    renderRowTabs();
   }
 });
 
@@ -930,6 +982,7 @@ async function loadPreviousWeekRows(opts){
       client: r.Client, owner: r.Owner, project: r.Project, stage: r.Stage,
       lastWeek: r.ThisWeek, thisWeek: r.NextWeek, period: r.Period, revenue: r.Revenue, continued: true
     }));
+    showRow(0);
     statusEl.textContent = `지난주(${week}) 입력 내용 ${rows.length}건을 불러왔어요. 금주·차주내용을 확인/수정해주세요.`;
     statusEl.className = 'status ok';
     formDirty = false;
