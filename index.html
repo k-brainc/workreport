@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>주간 업무 보고 시스템</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+<style>
+  :root{
+    --ink:#1C1C1E; --sub:#6C6C70; --muted:#98979C; --line:#D2D2D2; --bg:#DFDFDD; --card:#F6F6F5;
+    --purple:#7132F5; --purple-dark:#5824C4; --purple-tint:#EFE8FD;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;min-height:100vh;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;display:flex;align-items:center;justify-content:center;}
+  .wrap{max-width:980px;width:100%;padding:56px 24px;text-align:center;}
+  .brand-logo{display:flex;align-items:center;justify-content:center;margin-bottom:28px;}
+  .brand-logo a{display:inline-flex;}
+  .brand-logo img{height:30px;width:auto;}
+  h1{font-size:30px;font-weight:800;margin:0 0 10px;letter-spacing:-0.015em;}
+  p.sub{font-size:15.5px;color:var(--sub);margin:0 0 40px;font-weight:400;}
+  .choice-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+  .choice-card{display:block;text-decoration:none;background:var(--card);border:none;border-radius:22px;padding:40px 24px;cursor:pointer;transition:transform .2s cubic-bezier(.2,.8,.2,1), box-shadow .2s;box-shadow:0 1px 3px rgba(0,0,0,0.05);}
+  .choice-card:hover{transform:translateY(-4px);box-shadow:0 14px 30px rgba(0,0,0,0.1);}
+  .choice-card .icon-wrap{width:60px;height:60px;border-radius:50%;background:var(--purple-tint);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;}
+  .choice-card .icon-wrap svg{width:28px;height:28px;stroke:var(--purple-dark);fill:none;stroke-width:1.6;}
+  .choice-card .t-name{font-weight:800;font-size:17px;letter-spacing:-0.01em;color:var(--ink);margin-bottom:6px;}
+  .choice-card .t-desc{font-size:13px;color:var(--sub);font-weight:400;line-height:1.5;}
+  @media (max-width:720px){
+    .choice-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand-logo">
+    <a href="index.html"><img src="data:image/png;base64,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" alt="K-BRAIN"></a>
+  </div>
+  <h1>주간 업무 보고 시스템</h1>
+  <p class="sub">입력하실 항목을 선택해 주세요.</p>
+
+  <div class="choice-grid">
+    <a class="choice-card" href="team-form.html">
+      <div class="icon-wrap"><svg viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h12a2 2 0 012 2v2H4V6zM4 10h16v8a2 2 0 01-2 2H6a2 2 0 01-2-2v-8z"/></svg></div>
+      <div class="t-name">팀별 업무현황 입력</div>
+      <div class="t-desc">팀장님이 고객사별 전주 실적과<br>금주 계획을 입력합니다</div>
+    </a>
+    <a class="choice-card" href="individual-form.html">
+      <div class="icon-wrap"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c1.5-4 4.5-6 7-6s5.5 2 7 6"/></svg></div>
+      <div class="t-name">개인 업무현황 입력</div>
+      <div class="t-desc">구성원 개인의 이번주 한 일과<br>다음주 할 일을 입력합니다</div>
+    </a>
+    <a class="choice-card" href="dashboard.html">
+      <div class="icon-wrap"><svg viewBox="0 0 24 24"><path d="M4 19V9m6 10V5m6 14v-7"/><path d="M3 19h18"/></svg></div>
+      <div class="t-name">주간 업무 현황</div>
+      <div class="t-desc">팀별·개인별 입력 내용을<br>취합해서 한눈에 확인합니다</div>
+    </a>
+  </div>
+</div>
+</body>
+</html>
