@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>개인 업무결과 및 계획 입력</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+<style>
+  :root{
+    --purple:#7132F5; --purple-dark:#5824C4; --purple-tint:#F2ECFE;
+    --ink:#1D1B23; --sub:#6B6875; --line:#E4E1EC; --bg:#FAF9FC; --card:#FFFFFF;
+    --danger:#D8453A;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:var(--bg);color:var(--ink);display:flex;justify-content:center;}
+  .wrap{max-width:520px;width:100%;padding:40px 20px 80px;}
+  .icon{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;vertical-align:-3px;}
+
+  .brand-logo{display:flex;align-items:center;justify-content:center;margin-bottom:20px;}
+  .brand-logo a{display:inline-flex;}
+  .brand-logo img{height:26px;width:auto;}
+  .profile-row{display:flex;align-items:center;gap:14px;margin-bottom:22px;}
+  .avatar{width:52px;height:52px;border-radius:50%;background:var(--purple-tint);color:var(--purple-dark);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;flex-shrink:0;transition:background .15s;}
+  header h1{font-size:20px;font-weight:800;margin:0 0 2px;letter-spacing:-0.01em;}
+  header p{font-size:13px;color:var(--sub);margin:0;}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;}
+  .field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;}
+  .field label{font-size:13px;color:var(--sub);font-weight:700;display:flex;align-items:center;gap:5px;}
+  select,input[type=text],input[type=date],textarea{
+    font-family:inherit;font-size:14px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);width:100%;
+  }
+  select:focus,input:focus,textarea:focus{outline:none;border-color:var(--purple);box-shadow:0 0 0 3px var(--purple-tint);}
+  textarea{min-height:88px;resize:vertical;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+  .week-strip{display:flex;gap:4px;margin-top:4px;}
+  .week-strip .d{flex:1;text-align:center;font-size:11px;padding:6px 0;border-radius:6px;background:var(--purple-tint);color:var(--purple-dark);font-weight:600;}
+
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 8px;}
+  .chip{font-size:12px;padding:5px 11px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--sub);cursor:pointer;}
+  .chip:hover{border-color:var(--purple);color:var(--purple-dark);background:var(--purple-tint);}
+
+  .name-wrap{position:relative;}
+  .name-suggest{position:absolute;top:100%;left:0;right:0;background:var(--card);border:1px solid var(--line);border-radius:10px;margin-top:6px;box-shadow:0 6px 18px rgba(0,0,0,0.1);z-index:30;max-height:200px;overflow-y:auto;}
+  .name-suggest-item{padding:10px 13px;font-size:13.5px;cursor:pointer;display:flex;justify-content:space-between;gap:8px;}
+  .name-suggest-item:hover{background:var(--purple-tint);color:var(--purple-dark);}
+  .name-suggest-item .t{font-size:11px;color:var(--sub);font-weight:400;}
+  .ghost-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border-radius:9px;border:1px dashed var(--line);background:#fff;color:var(--sub);font-size:12.5px;font-weight:600;cursor:pointer;margin-bottom:16px;}
+  .ghost-btn:hover{border-color:var(--purple);color:var(--purple-dark);}
+  .ghost-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;}
+  .submit-btn{width:100%;padding:14px;border:none;border-radius:12px;background:var(--purple);color:#fff;font-weight:700;font-size:15px;cursor:pointer;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .submit-btn svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2;}
+  .submit-btn:hover{background:var(--purple-dark);}
+  .submit-btn:disabled{background:var(--line);color:var(--sub);cursor:default;}
+  .status{font-size:13px;text-align:center;margin-top:12px;color:var(--sub);}
+  .status.ok{color:#1D8A4A;}
+  .status.err{color:var(--danger);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand-logo">
+    <a href="index.html"><img src="data:image/png;base64,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" alt="K-BRAIN"></a>
+  </div>
+  <div class="profile-row">
+    <div class="avatar" id="avatar">?</div>
+    <header>
+      <h1>개인 업무결과 및 계획</h1>
+      <p>이번 주 한 일과 다음 주 할 일을 간단히 적어 주세요.</p>
+    </header>
+  </div>
+  <div class="card">
+    <div class="row2">
+      <div class="field">
+        <label><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c1.5-4 4.5-6 7-6s5.5 2 7 6"/></svg> 이름</label>
+        <div class="name-wrap">
+          <input type="text" id="name" placeholder="이름을 입력하면 찾아드려요" autocomplete="off">
+          <div class="name-suggest hidden" id="nameSuggest"></div>
+        </div>
+      </div>
+      <div class="field">
+        <label><svg class="icon" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h12a2 2 0 012 2v2H4V6zM4 10h16v8a2 2 0 01-2 2H6a2 2 0 01-2-2v-8z"/></svg> 소속팀</label>
+        <select id="team">
+          <option value="">선택</option>
+          <option>컨설팅팀</option>
+          <option>사업 1팀</option>
+          <option>사업 2팀</option>
+          <option>사업 3팀</option>
+          <option>사업 4팀</option>
+          <option>공공AI센터</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label><svg class="icon" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg> 기준 주차</label>
+      <input type="date" id="week">
+      <div class="week-strip" id="weekStrip"></div>
+    </div>
+
+    <button class="ghost-btn" id="loadPrevBtn" type="button">
+      <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 109-9M3 12l4-4M3 12l4 4"/></svg>
+      이전에 제출한 내용 불러오기
+    </button>
+
+    <div class="field">
+      <label>이번주 한 일</label>
+      <div class="chips" id="chipsLast"></div>
+      <textarea id="lastWeek" placeholder="이번 주 완료하거나 진행한 업무"></textarea>
+    </div>
+
+    <div class="field">
+      <label>다음주 할 일</label>
+      <div class="chips" id="chipsNext"></div>
+      <textarea id="thisWeek" placeholder="다음 주 진행할 업무 계획"></textarea>
+    </div>
+
+    <div class="field">
+      <label>특이사항 (선택)</label>
+      <textarea id="notes" placeholder="공유하고 싶은 이슈나 요청사항"></textarea>
+    </div>
+
+    <button class="submit-btn" id="submitBtn" type="button">
+      <svg viewBox="0 0 24 24"><path d="M4 12l6 6L20 6"/></svg>
+      제출하기
+    </button>
+    <div class="status" id="status"></div>
+  </div>
+</div>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbzV2aacbgOpzp4uHYwR4WojeNfHW3NfvYJK4-XjXkWtGsIdgjU_e5MUMMLnfD-eWh6N8Q/exec';
+
+const QUICK_TAGS_LAST = ['교육 운영', '결과보고 작성', '고객사 미팅', '콘텐츠 제작', '정산 처리'];
+const QUICK_TAGS_NEXT = ['교육 준비', '제안서 작성', '고객사 미팅', '콘텐츠 검수', '결과보고 준비'];
+
+function renderChips(id, textareaId, tags){
+  const el = document.getElementById(id);
+  el.innerHTML = tags.map(t => `<button type="button" class="chip">${t}</button>`).join('');
+  el.addEventListener('click', (e) => {
+    if (e.target.classList.contains('chip')) {
+      const ta = document.getElementById(textareaId);
+      ta.value = ta.value ? ta.value + ', ' + e.target.textContent : e.target.textContent;
+    }
+  });
+}
+renderChips('chipsLast', 'lastWeek', QUICK_TAGS_LAST);
+renderChips('chipsNext', 'thisWeek', QUICK_TAGS_NEXT);
+
+function mondayOf(d){
+  const date = new Date(d);
+  const day = date.getDay();
+  const diff = (day === 0 ? -6 : 1) - day;
+  date.setDate(date.getDate() + diff);
+  return date;
+}
+function renderWeekStrip(mondayStr){
+  const monday = new Date(mondayStr);
+  const days = ['월','화','수','목','금'];
+  const strip = document.getElementById('weekStrip');
+  strip.innerHTML = days.map((d,i) => {
+    const dt = new Date(monday); dt.setDate(monday.getDate()+i);
+    return `<div class="d">${d} ${dt.getMonth()+1}/${dt.getDate()}</div>`;
+  }).join('');
+}
+function toISO(d){
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+const initialMonday = mondayOf(new Date());
+document.getElementById('week').value = toISO(initialMonday);
+renderWeekStrip(document.getElementById('week').value);
+document.getElementById('week').addEventListener('change', (e) => renderWeekStrip(e.target.value));
+
+document.getElementById('name').addEventListener('input', (e) => {
+  const v = e.target.value.trim();
+  document.getElementById('avatar').textContent = v ? v.slice(0,1) : '?';
+  renderNameSuggestions(v);
+});
+
+let members = [];
+(async () => {
+  try {
+    const cfg = await fetch(`${API_URL}?action=config`).then(r => r.json());
+    members = cfg.members || [];
+  } catch (e) { members = []; }
+})();
+
+function renderNameSuggestions(query){
+  const box = document.getElementById('nameSuggest');
+  const q = query.toLowerCase();
+  const seen = new Set();
+  const matches = members.filter(m => {
+    if (seen.has(m.name)) return false;
+    if (q && !m.name.toLowerCase().includes(q)) return false;
+    seen.add(m.name);
+    return true;
+  });
+  if (!matches.length) { box.classList.add('hidden'); box.innerHTML = ''; return; }
+  box.innerHTML = matches.slice(0, 8).map(m =>
+    `<div class="name-suggest-item" data-name="${m.name}" data-team="${m.team}"><span>${m.name}</span><span class="t">${m.team}</span></div>`
+  ).join('');
+  box.classList.remove('hidden');
+}
+
+document.getElementById('name').addEventListener('focusin', (e) => {
+  renderNameSuggestions(e.target.value.trim());
+});
+
+document.getElementById('nameSuggest').addEventListener('click', (e) => {
+  const item = e.target.closest('.name-suggest-item');
+  if (!item) return;
+  document.getElementById('name').value = item.dataset.name;
+  document.getElementById('avatar').textContent = item.dataset.name.slice(0,1);
+  if (!document.getElementById('team').value) document.getElementById('team').value = item.dataset.team;
+  document.getElementById('nameSuggest').classList.add('hidden');
+  loadPreviousEntry();
+});
+document.getElementById('name').addEventListener('focusout', () => {
+  setTimeout(() => document.getElementById('nameSuggest').classList.add('hidden'), 150);
+});
+
+async function loadPreviousEntry(){
+  const name = document.getElementById('name').value.trim();
+  const statusEl = document.getElementById('status');
+  if (!name) {
+    statusEl.textContent = '이름을 먼저 입력해 주세요.';
+    statusEl.className = 'status err';
+    return;
+  }
+  statusEl.textContent = '이전에 제출한 내용을 찾는 중...'; statusEl.className = 'status';
+  try {
+    const all = await fetch(`${API_URL}?action=individualData`).then(r => r.json());
+    const mine = all.filter(r => String(r.Name || '').trim() === name);
+    if (!mine.length) {
+      statusEl.textContent = '이전에 제출한 내용이 없습니다.';
+      statusEl.className = 'status err';
+      return;
+    }
+    mine.sort((a, b) => String(b.Week).localeCompare(String(a.Week)));
+
+    const selectedWeek = document.getElementById('week').value;
+    const prevMonday = new Date(selectedWeek);
+    prevMonday.setDate(prevMonday.getDate() - 7);
+    const prevWeekStr = toISO(prevMonday);
+
+    const exact = mine.find(r => String(r.Week) === prevWeekStr);
+    const latest = exact || mine[0];
+
+    if (!document.getElementById('team').value) document.getElementById('team').value = latest.Team || '';
+    document.getElementById('lastWeek').value = latest.ThisWeek || '';
+
+    if (exact) {
+      statusEl.textContent = `지난주(${latest.Week}) 제출 내용을 불러왔어요. 이번주 계획을 새로 채워주세요.`;
+    } else {
+      statusEl.textContent = `지난주 제출 내용은 없어서, 가장 최근(${latest.Week}) 제출 내용을 대신 불러왔어요.`;
+    }
+    statusEl.className = 'status ok';
+  } catch (err) {
+    statusEl.textContent = '불러오기 실패: ' + err.message;
+    statusEl.className = 'status err';
+  }
+}
+document.getElementById('loadPrevBtn').addEventListener('click', loadPreviousEntry);
+
+document.getElementById('submitBtn').addEventListener('click', async () => {
+  const statusEl = document.getElementById('status');
+  const name = document.getElementById('name').value.trim();
+  const team = document.getElementById('team').value;
+  const week = document.getElementById('week').value;
+  const lastWeek = document.getElementById('lastWeek').value.trim();
+  const thisWeek = document.getElementById('thisWeek').value.trim();
+  const notes = document.getElementById('notes').value.trim();
+
+  if (!name || !team) {
+    statusEl.textContent = '이름과 소속팀을 입력해 주세요.';
+    statusEl.className = 'status err';
+    return;
+  }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true; statusEl.textContent = '제출 중...'; statusEl.className = 'status';
+
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ type: 'individual', name, team, week, lastWeek, thisWeek, notes })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      statusEl.textContent = '제출 완료되었습니다.';
+      statusEl.className = 'status ok';
+    } else {
+      throw new Error(data.error || '알 수 없는 오류');
+    }
+  } catch (err) {
+    statusEl.textContent = '제출 실패: ' + err.message;
+    statusEl.className = 'status err';
+  } finally {
+    btn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>
