@@ -72,6 +72,9 @@
   .row-step.done.active .row-step-circle{background:var(--teal);border-color:var(--teal);color:#fff;}
   .row-step-line{width:26px;height:2px;background:var(--line);flex-shrink:0;transition:background .2s;}
   .row-step-line.done{background:var(--teal);}
+  .row-step-add{width:34px;height:34px;border-radius:50%;background:var(--purple-tint);border:2px dashed var(--blue);display:flex;align-items:center;justify-content:center;color:var(--blue);cursor:pointer;flex-shrink:0;transition:all .15s;margin-left:10px;}
+  .row-step-add:hover{background:#E2D6FC;transform:scale(1.08);}
+  .row-step-add svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.4;}
 
   .row-card{position:relative;background:var(--card);border:none;border-radius:22px;margin-bottom:18px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.04);display:none;}
   .row-card.active{display:block;}
@@ -104,14 +107,12 @@
   input.field-lg-input{font-size:17px;font-weight:500;padding:13px 15px;}
   textarea{min-height:130px;resize:vertical;line-height:1.6;}
 
-  .stage-group{display:flex;gap:8px;flex-wrap:wrap;}
-  .stage-btn{display:flex;align-items:center;gap:5px;font-size:13px;font-weight:500;padding:9px 16px;border-radius:980px;border:1px solid var(--line);background:#fff;color:var(--sub);cursor:pointer;transition:all .15s;}
-  .stage-btn:hover{border-color:var(--blue);color:var(--blue);}
-  .stage-btn.active[data-stage="제안"]{background:var(--amber-tint);color:var(--amber);border-color:var(--amber-tint);}
-  .stage-btn.active[data-stage="수행"]{background:var(--teal-tint);color:var(--teal);border-color:var(--teal-tint);}
-  .stage-btn.active[data-stage="제안/수행"]{background:var(--purple-tint);color:var(--purple);border-color:var(--purple-tint);}
-  .stage-btn.active[data-stage="수행/정산"]{background:var(--navy-tint);color:var(--navy);border-color:var(--navy-tint);}
-  .stage-btn.active[data-stage="계약"]{background:var(--green-tint);color:var(--green);border-color:var(--green-tint);}
+  .stage-group{display:flex;border-radius:980px;overflow:hidden;border:1px solid var(--line);}
+  .stage-btn{flex:1;text-align:center;display:flex;align-items:center;justify-content:center;gap:5px;font-size:12.5px;font-weight:600;padding:10px 6px;border:none;border-right:1px solid var(--line);background:#fff;color:var(--muted);cursor:pointer;transition:all .2s;white-space:nowrap;}
+  .stage-btn:last-child{border-right:none;}
+  .stage-btn:hover{color:var(--blue);}
+  .stage-btn.filled{background:var(--blue-tint);color:var(--blue-dark);}
+  .stage-btn.active{background:var(--blue);color:#fff;font-weight:700;}
 
   .owner-hint{font-size:12px;color:var(--muted);font-weight:400;}
   .owner-combobox{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:6px;min-height:44px;padding:6px 38px 6px 10px;border:1px solid var(--line);border-radius:12px;background:#fff;}
@@ -224,10 +225,6 @@
 
       <div class="row-tabs" id="rowTabs"></div>
       <div id="rows"></div>
-      <button class="add-btn" id="addRow" type="button">
-        <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-        고객사 항목 추가
-      </button>
 
       <div class="submit-bar">
         <button class="submit-btn" id="submitBtn" type="button">
@@ -482,7 +479,7 @@ function renderRowTabs(cards){
   cards = cards || [...rowsEl.querySelectorAll('.row-card')];
   const tabsEl = document.getElementById('rowTabs');
   const checkIcon = '<svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>';
-  tabsEl.innerHTML = cards.map((card, i) => {
+  const stepsHtml = cards.map((card, i) => {
     const done = card.classList.contains('is-completed');
     const active = i === activeRowIndex;
     const line = i < cards.length - 1
@@ -495,9 +492,20 @@ function renderRowTabs(cards){
       ${line}
     `;
   }).join('');
+  tabsEl.innerHTML = stepsHtml + `
+    <div class="row-step-add" data-action="addRowStep" aria-label="고객사 항목 추가">
+      <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+    </div>
+  `;
 }
 
 document.getElementById('rowTabs').addEventListener('click', (e) => {
+  if (e.target.closest('[data-action="addRowStep"]')) {
+    formDirty = true;
+    addRow();
+    showRow(rowsEl.children.length - 1);
+    return;
+  }
   const step = e.target.closest('.row-step');
   if (!step) return;
   showRow(Number(step.dataset.rowIndex));
@@ -726,8 +734,13 @@ function addRow(prefill){
     const group = card.querySelector('.stage-group');
     if (prefill.stage) {
       group.dataset.value = prefill.stage;
+      const btns = [...group.querySelectorAll('.stage-btn')];
       const btn = group.querySelector(`[data-stage="${prefill.stage}"]`);
-      if (btn) btn.classList.add('active');
+      if (btn) {
+        const activeIdx = btns.indexOf(btn);
+        btns.forEach((b, i) => { if (i < activeIdx) b.classList.add('filled'); });
+        btn.classList.add('active');
+      }
     }
     if (prefill.continued) card.querySelector('[data-el="continuedTag"]').classList.remove('hidden');
     validateOwnerField(card);
@@ -735,11 +748,6 @@ function addRow(prefill){
   updateSummary();
   return card;
 }
-document.getElementById('addRow').addEventListener('click', () => {
-  formDirty = true;
-  addRow();
-  showRow(rowsEl.children.length - 1);
-});
 
 function togglePeriodNA(card, checked){
   card.querySelector('[data-field="period"]').classList.toggle('hidden', checked);
@@ -761,7 +769,12 @@ rowsEl.addEventListener('click', (e) => {
   const stageBtn = e.target.closest('.stage-btn');
   if (stageBtn) {
     const group = stageBtn.closest('.stage-group');
-    group.querySelectorAll('.stage-btn').forEach(b => b.classList.remove('active'));
+    const btns = [...group.querySelectorAll('.stage-btn')];
+    const activeIdx = btns.indexOf(stageBtn);
+    btns.forEach((b, i) => {
+      b.classList.remove('active', 'filled');
+      if (i < activeIdx) b.classList.add('filled');
+    });
     stageBtn.classList.add('active');
     group.dataset.value = stageBtn.dataset.stage;
   }
