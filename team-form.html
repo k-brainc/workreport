@@ -350,7 +350,7 @@ const TEAMS = [
 let currentTeam = null;
 let formDirty = false;
 let activeRowIndex = 0;
-let currentMonday = mondayOf(new Date());
+let currentMonday = getDefaultMonday();
 let members = [];
 let projectMaster = [];
 
@@ -370,6 +370,20 @@ function mondayOf(d){
   date.setDate(date.getDate() + diff);
   date.setHours(0,0,0,0);
   return date;
+}
+// 주차 자체는 항상 월~금 기준이지만, "화면을 열었을 때 기본으로 보여줄 주차"는
+// 수요일을 기준으로 전환합니다. 월/화요일에 들어오면 아직 지난주 항목으로 보고
+// 지난주 화면을, 수요일부터는 이번주 화면을 기본으로 보여줍니다.
+function getDefaultMonday(){
+  const now = new Date();
+  const thisMonday = mondayOf(now);
+  const day = now.getDay(); // 0=일,1=월,2=화,3=수...
+  if (day === 1 || day === 2) {
+    const prev = new Date(thisMonday);
+    prev.setDate(prev.getDate() - 7);
+    return prev;
+  }
+  return thisMonday;
 }
 function toISO(d){
   const y = d.getFullYear();
@@ -433,7 +447,7 @@ document.getElementById('changeTeamBtn').addEventListener('click', () => {
   document.getElementById('step2').classList.add('hidden');
   document.getElementById('step1').classList.remove('hidden');
   rowsEl.innerHTML = '';
-  currentMonday = mondayOf(new Date());
+  currentMonday = getDefaultMonday();
   document.getElementById('status').textContent = '';
   document.getElementById('status').className = 'status';
 });
@@ -989,17 +1003,38 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
   }).filter(r => r.client || r.project);
 
   const btn = document.getElementById('submitBtn');
-  btn.disabled = true; statusEl.textContent = '제출 중...'; statusEl.className = 'status';
+  btn.disabled = true; statusEl.textContent = '기존 제출 내역을 확인하는 중...'; statusEl.className = 'status';
+
+  let overwrite = false;
+  try {
+    const check = await fetch(`${API_URL}?action=checkExisting&team=${encodeURIComponent(currentTeam)}&week=${week}`).then(r => r.json());
+    if (check.count > 0) {
+      const ok = confirm(`이미 이 주차(${week})에 ${currentTeam}에서 제출한 내용이 있습니다 (${check.count}건).\n덮어쓰시겠습니까?`);
+      if (!ok) {
+        btn.disabled = false;
+        statusEl.textContent = '제출이 취소되었습니다.';
+        statusEl.className = 'status';
+        return;
+      }
+      overwrite = true;
+    }
+  } catch (e) {
+    // 확인 실패해도 제출 자체는 계속 진행 (덮어쓰기 없이 추가로 저장됨)
+  }
+
+  statusEl.textContent = '제출 중...'; statusEl.className = 'status';
 
   try {
     const res = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ type: 'team', team: currentTeam, week, rows })
+      body: JSON.stringify({ type: 'team', team: currentTeam, week, rows, overwrite })
     });
     const data = await res.json();
     if (data.ok) {
-      statusEl.textContent = `제출 완료 (${data.count}건 저장됨)`;
+      statusEl.textContent = overwrite
+        ? `기존 내용을 덮어쓰고 제출 완료 (${data.count}건 저장됨)`
+        : `제출 완료 (${data.count}건 저장됨)`;
       statusEl.className = 'status ok';
       formDirty = false;
     } else {
