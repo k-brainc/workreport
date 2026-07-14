@@ -371,19 +371,9 @@ function mondayOf(d){
   date.setHours(0,0,0,0);
   return date;
 }
-// 주차 자체는 항상 월~금 기준이지만, "화면을 열었을 때 기본으로 보여줄 주차"는
-// 수요일을 기준으로 전환합니다. 월/화요일에 들어오면 아직 지난주 항목으로 보고
-// 지난주 화면을, 수요일부터는 이번주 화면을 기본으로 보여줍니다.
+// 화면을 열었을 때 기본으로 보여줄 주차는 오늘이 속한 주(월요일 기준)입니다.
 function getDefaultMonday(){
-  const now = new Date();
-  const thisMonday = mondayOf(now);
-  const day = now.getDay(); // 0=일,1=월,2=화,3=수...
-  if (day === 1 || day === 2) {
-    const prev = new Date(thisMonday);
-    prev.setDate(prev.getDate() - 7);
-    return prev;
-  }
-  return thisMonday;
+  return mondayOf(new Date());
 }
 function toISO(d){
   const y = d.getFullYear();
